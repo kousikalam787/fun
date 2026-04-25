@@ -9,8 +9,6 @@
       margin:0;
       font-family:Arial;
       color:white;
-
-      /* 🖼️ IMAGE BACKGROUND */
       background: url('bg.jpg') no-repeat center center fixed;
       background-size: cover;
     }
@@ -25,18 +23,24 @@
       z-index:-1;
     }
 
-    /* 🔝 TOP BAR */
-    .topbar {
+    /* 🔝 NAVBAR */
+    nav {
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding:15px 20px;
       background:rgba(0,0,0,0.7);
+      padding:10px 20px;
     }
 
-    .logo {
-      font-size:22px;
+    .nav-links a {
+      color:white;
+      margin:0 10px;
+      text-decoration:none;
       font-weight:bold;
+    }
+
+    .nav-links a:hover {
+      color:#22c55e;
     }
 
     /* 👤 PROFILE */
@@ -87,27 +91,42 @@
     }
 
     .card {
-      background: rgba(30,41,59,0.85);
+      background:rgba(30,41,59,0.85);
       padding:20px;
       margin:15px 0;
       border-radius:15px;
-      transition:0.3s;
       cursor:pointer;
+      transition:0.3s;
     }
 
     .card:hover {
-      transform: scale(1.05);
+      transform:scale(1.05);
       background:#22c55e;
     }
 
+    /* MOBILE */
+    @media(max-width:768px){
+      nav {
+        flex-direction:column;
+      }
+      .nav-links {
+        margin-top:10px;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-<!-- TOP -->
-<div class="topbar">
-  <div class="logo">🎮 Fun Zone</div>
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="games.html">Games</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
 
   <div class="profile" onclick="toggleMenu()">
     <div class="avatar" id="avatar">U</div>
@@ -117,12 +136,13 @@
       <button onclick="logout()">Logout</button>
     </div>
   </div>
-</div>
+</nav>
 
 <!-- MAIN -->
 <div class="main">
-  <h2>Games</h2>
-  <div class="card">🐍 Snake Game</div>
+  <h2>Welcome to Fun Zone 🎮</h2>
+
+  <div class="card" onclick="openGame('snake.html')">🐍 Snake Game</div>
   <div class="card">❌ Tic Tac Toe</div>
 </div>
 
@@ -164,7 +184,7 @@ firebase.database().ref("users/" + username).once("value")
   }
 });
 
-// TOGGLE MENU
+// MENU TOGGLE
 function toggleMenu() {
   let menu = document.getElementById("menu");
   menu.style.display = menu.style.display === "block" ? "none" : "block";
@@ -178,12 +198,17 @@ function logout() {
   });
 }
 
-// CLOSE MENU OUTSIDE
+// CLOSE MENU
 window.onclick = function(e) {
   if (!e.target.closest(".profile")) {
     document.getElementById("menu").style.display = "none";
   }
 };
+
+// GAME OPEN
+function openGame(game){
+  window.location.href = game;
+}
 </script>
 
 </body>
