@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ludo Lite Online</title>
+  <title>Ludo Lite FIXED</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -35,8 +35,13 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      border-radius:5px;
+      border-radius:6px;
       font-size:14px;
+    }
+
+    #dice{
+      font-size:30px;
+      margin:10px;
     }
 
     #popup{
@@ -55,17 +60,12 @@
       border-radius:10px;
       width:250px;
     }
-
-    #dice{
-      font-size:30px;
-      margin:10px;
-    }
   </style>
 </head>
 
 <body>
 
-<h2>🎲 Ludo Lite Online</h2>
+<h2>🎲 Ludo Lite FIXED</h2>
 
 <input id="room" placeholder="Room Code">
 <br>
@@ -86,7 +86,6 @@
   <div class="box">
     <h2 id="msg"></h2>
     <button onclick="reset()">Rematch</button>
-    <button onclick="location.reload()">Restart</button>
   </div>
 </div>
 
@@ -108,6 +107,18 @@ let room=null;
 let me=null;
 let ended=false;
 
+/* SAFE READ */
+function safe(d){
+  if(!d) return null;
+
+  if(!d.posA) d.posA=0;
+  if(!d.posB) d.posB=0;
+  if(!d.turn) d.turn="A";
+  if(!d.players) d.players={A:"",B:""};
+
+  return d;
+}
+
 /* CREATE */
 function create(){
   room=Math.random().toString(36).substr(2,5);
@@ -121,7 +132,8 @@ function create(){
     players:{A:user,B:""}
   });
 
-  document.getElementById("info").innerText="Room: "+room;
+  document.getElementById("info").innerText="Room: "+room+" | You: A";
+
   start();
 }
 
@@ -135,24 +147,25 @@ function join(){
 
   db.ref("ludo/"+room+"/players/B").set(user);
 
-  document.getElementById("info").innerText="Joined Room";
+  document.getElementById("info").innerText="Joined Room | You: B";
+
   start();
 }
 
-/* START */
+/* START LISTENER */
 function start(){
 
   db.ref("ludo/"+room).on("value",snap=>{
 
-    let d=snap.val();
+    let d=safe(snap.val());
     if(!d) return;
 
     draw(d.posA,d.posB);
 
     document.getElementById("turn").innerText=
-      `Turn: ${d.turn}`;
+      `Turn: ${d.turn} | A:${d.players.A||"?"} | B:${d.players.B||"?"}`;
 
-    if((d.posA>=24 || d.posB>=24) && !ended){
+    if(!ended && (d.posA>=24 || d.posB>=24)){
       ended=true;
 
       let winner=d.posA>=24?"A":"B";
@@ -188,8 +201,10 @@ function roll(){
 
   ref.once("value").then(snap=>{
 
-    let d=snap.val();
-    if(!d || d.turn!==me) return;
+    let d=safe(snap.val());
+    if(!d) return;
+
+    if(d.turn!==me) return;
 
     if(me==="A"){
       ref.update({
