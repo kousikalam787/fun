@@ -1,63 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>2 Player Battle Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2 Player Tug Battle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      text-align: center;
-      background: #111;
-      color: white;
-    }
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b0f1a;
+  color:white;
+  text-align:center;
+}
 
-    #barContainer {
-      width: 90%;
-      height: 40px;
-      background: #333;
-      margin: 60px auto;
-      border-radius: 20px;
-      overflow: hidden;
-      position: relative;
-    }
+h2{
+  margin-top:20px;
+}
 
-    #bar {
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(90deg, red, orange);
-      position: absolute;
-      left: 25%;
-      transition: 0.1s;
-    }
+#status{
+  margin-top:10px;
+  color:#22c55e;
+}
 
-    button {
-      padding: 15px 25px;
-      font-size: 18px;
-      margin-top: 20px;
-      border: none;
-      border-radius: 10px;
-      background: #00ff88;
-      color: black;
-      font-weight: bold;
-    }
-  </style>
+#barContainer{
+  width:90%;
+  height:45px;
+  background:#222;
+  margin:60px auto;
+  border-radius:30px;
+  overflow:hidden;
+  position:relative;
+}
+
+#bar{
+  width:50%;
+  height:100%;
+  background:linear-gradient(90deg,red,orange,yellow);
+  position:absolute;
+  left:25%;
+  transition:0.1s;
+}
+
+button{
+  padding:15px 25px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  font-weight:bold;
+  margin-top:20px;
+}
+</style>
 </head>
 
 <body>
 
-<h2>🔥 2 Player Battle Game</h2>
+<h2>🔥 Tug Battle Multiplayer</h2>
+<div id="status">Connecting...</div>
 
 <div id="barContainer">
   <div id="bar"></div>
 </div>
 
-<button onclick="hit()">TAP PUSH</button>
+<button onclick="hit()">PUSH 🔥</button>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update,
+  onValue,
+  push,
+  remove
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDTK0-Q2ev1MWroui9jH0HhKmg-O6g9HWs",
@@ -72,63 +91,151 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const roomId = "room1";
-const roomRef = ref(db, "rooms/" + roomId);
+const statusEl = document.getElementById("status");
 
-// ✅ ONLY initialize if room doesn't exist
-get(roomRef).then((snap) => {
-  if (!snap.exists()) {
-    update(roomRef, {
-      p1: 0,
-      p2: 0
+let playerId = Math.random().toString(36).substr(2, 9);
+let myRoom = null;
+let mySide = null;
+
+// matchmaking queue
+const queueRef = ref(db, "queue");
+const roomsRef = ref(db, "rooms");
+
+// ---------------- MATCHMAKING ----------------
+async function findMatch(){
+
+  statusEl.innerText = "Finding opponent...";
+
+  const qSnap = await get(queueRef);
+
+  if(!qSnap.exists()){
+    // no player waiting → join queue
+    const newQ = push(queueRef);
+    set(newQ, { id: playerId });
+
+    // wait for match
+    onValue(queueRef, (snap)=>{
+      checkMatch();
     });
+
+  } else {
+    // opponent exists → create room
+    let opponentId = null;
+
+    qSnap.forEach(child=>{
+      opponentId = child.val().id;
+    });
+
+    if(opponentId && opponentId !== playerId){
+      startRoom(opponentId);
+    }
   }
-});
+}
 
-// realtime UI
-onValue(roomRef, (snap) => {
-  const data = snap.val();
-  if (!data) return;
+// create room
+function startRoom(opponentId){
 
-  let p1 = data.p1 || 0;
-  let p2 = data.p2 || 0;
+  const roomId = "room_" + Date.now();
 
-  // convert to bar position (-40 to +40)
-  let power = p1 - p2;
+  myRoom = roomId;
 
-  let bar = document.getElementById("bar");
-  let left = 25 + power;
+  set(ref(db,"rooms/"+roomId),{
+    p1:{id: playerId, power:0},
+    p2:{id: opponentId, power:0}
+  });
 
-  bar.style.left = left + "%";
+  remove(queueRef);
 
-  if (power >= 40) {
-    alert("🔥 Player 1 Wins!");
-    update(roomRef, { p1: 0, p2: 0 });
+  mySide = "p1";
+  statusEl.innerText = "Matched! You are P1 🔵";
+
+  listenRoom(roomId);
+}
+
+// check if matched
+function checkMatch(){
+  get(queueRef).then(snap=>{
+    if(!snap.exists()) return;
+
+    let ids = [];
+    snap.forEach(c=>{
+      ids.push(c.val().id);
+    });
+
+    if(ids.length >= 2){
+      startRoom(ids[0]);
+    }
+  });
+}
+
+// ---------------- GAME LOGIC ----------------
+function listenRoom(roomId){
+
+  onValue(ref(db,"rooms/"+roomId),(snap)=>{
+    const data = snap.val();
+    if(!data) return;
+
+    let p1 = data.p1?.power || 0;
+    let p2 = data.p2?.power || 0;
+
+    let diff = p1 - p2;
+
+    let bar = document.getElementById("bar");
+    let pos = 25 + diff;
+
+    if(pos < 0) pos = 0;
+    if(pos > 50) pos = 50;
+
+    bar.style.left = pos + "%";
+
+    if(diff >= 40){
+      alert("🔥 P1 Wins!");
+      reset(roomId);
+    }
+
+    if(diff <= -40){
+      alert("🔥 P2 Wins!");
+      reset(roomId);
+    }
+  });
+}
+
+// reset match
+function reset(roomId){
+  update(ref(db,"rooms/"+roomId),{
+    p1:{power:0},
+    p2:{power:0}
+  });
+}
+
+// ---------------- HIT BUTTON ----------------
+window.hit = async function(){
+
+  if(!myRoom) {
+    await findMatch();
+    return;
   }
 
-  if (power <= -40) {
-    alert("🔥 Player 2 Wins!");
-    update(roomRef, { p1: 0, p2: 0 });
+  const roomSnap = await get(ref(db,"rooms/"+myRoom));
+  const data = roomSnap.val();
+
+  if(!data) return;
+
+  if(data.p1.id === playerId){
+    data.p1.power += 2;
+  } else {
+    data.p2.power += 2;
   }
-});
 
-// assign player randomly (simple demo)
-let me = Math.random() > 0.5 ? "p1" : "p2";
-
-window.hit = function () {
-  get(roomRef).then((snap) => {
-    let data = snap.val();
-    if (!data) return;
-
-    let current = data[me] || 0;
-    current += 2;
-
-    let updateData = {};
-    updateData[me] = current;
-
-    update(roomRef, updateData);
+  update(ref(db,"rooms/"+myRoom),{
+    p1: data.p1,
+    p2: data.p2
   });
 };
+
+// start game
+findMatch();
+
 </script>
 
 </body>
