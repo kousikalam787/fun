@@ -12,28 +12,22 @@
       min-height:100vh;
       display:flex;
       flex-direction:column;
-      overflow-x:hidden;
     }
 
-    /* 🎥 VIDEO BACKGROUND */
+    /* VIDEO BG */
     .video-bg{
       position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
+      top:0;left:0;
+      width:100%;height:100%;
       object-fit:cover;
       z-index:-2;
     }
 
-    /* DARK OVERLAY */
     body::after{
       content:"";
       position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
+      top:0;left:0;
+      width:100%;height:100%;
       background:rgba(0,0,0,0.65);
       z-index:-1;
     }
@@ -45,15 +39,12 @@
       align-items:center;
       padding:12px 18px;
       background:rgba(0,0,0,0.6);
-      position:sticky;
-      top:0;
-      z-index:1000;
     }
 
     nav h2{
       margin:0;
-      font-size:18px;
       color:#22c55e;
+      font-size:18px;
     }
 
     .nav-links a{
@@ -63,26 +54,30 @@
       font-size:14px;
     }
 
-    .nav-links a:hover{
-      color:#22c55e;
+    /* 🔍 SEARCH BAR */
+    .search-box{
+      text-align:center;
+      padding:15px;
+    }
+
+    .search-box input{
+      width:80%;
+      max-width:400px;
+      padding:10px;
+      border:none;
+      border-radius:8px;
+      outline:none;
+      font-size:14px;
     }
 
     /* HERO */
     .hero{
-      padding:20px;
       text-align:center;
+      padding:10px;
     }
 
     .hero h1{
-      font-size:24px;
       margin:10px 0;
-    }
-
-    .hero p{
-      font-size:14px;
-      opacity:0.85;
-      max-width:500px;
-      margin:auto;
     }
 
     /* GRID */
@@ -101,7 +96,6 @@
       cursor:pointer;
       transition:0.3s;
       text-align:center;
-      box-shadow:0 5px 15px rgba(0,0,0,0.4);
     }
 
     .card:hover{
@@ -114,7 +108,6 @@
       width:100%;
       height:140px;
       object-fit:cover;
-      display:block;
     }
 
     .title{
@@ -123,25 +116,18 @@
       font-weight:bold;
     }
 
-    /* FOOTER */
     footer{
       text-align:center;
       padding:15px;
       background:rgba(0,0,0,0.7);
       font-size:12px;
     }
-
-    footer a{
-      color:#22c55e;
-      text-decoration:none;
-      margin:0 5px;
-    }
   </style>
 </head>
 
 <body>
 
-<!-- 🎥 BACKGROUND VIDEO -->
+<!-- VIDEO -->
 <video class="video-bg" autoplay muted loop playsinline>
   <source src="bg.mp4" type="video/mp4">
 </video>
@@ -160,23 +146,27 @@
 <!-- HERO -->
 <div class="hero">
   <h1>Play Free Online Games</h1>
-  <p>Enjoy smooth browser games instantly without download. Fun Zone brings fast and fun gaming experience.</p>
+</div>
+
+<!-- 🔍 SEARCH -->
+<div class="search-box">
+  <input type="text" id="search" placeholder="Search games... (snake, ludo, tic tac toe)">
 </div>
 
 <!-- GAMES -->
-<div class="grid">
+<div class="grid" id="gameGrid">
 
-  <div class="card" onclick="openGame('snake.html')">
+  <div class="card" data-name="snake" onclick="openGame('snake.html')">
     <img src="snake.jpg" class="thumb">
     <div class="title">🐍 Snake Game</div>
   </div>
 
-  <div class="card" onclick="openGame('tictactoe.html')">
+  <div class="card" data-name="tictactoe tic tac toe" onclick="openGame('tictactoe.html')">
     <img src="tictactoe.jpg" class="thumb">
     <div class="title">❌⭕ Tic Tac Toe</div>
   </div>
 
-  <div class="card" onclick="openGame('ludo.html')">
+  <div class="card" data-name="ludo dice" onclick="openGame('ludo.html')">
     <img src="ludo.jpg" class="thumb">
     <div class="title">🎲 Ludo Lite</div>
   </div>
@@ -185,16 +175,28 @@
 
 <!-- FOOTER -->
 <footer>
-  © 2026 Fun Zone |
-  <a href="about.html">About</a>
-  <a href="privacy.html">Privacy</a>
-  <a href="contact.html">Contact</a>
+  © 2026 Fun Zone | All Rights Reserved
 </footer>
 
 <script>
 function openGame(g){
-  window.location.href = g;
+  window.location.href=g;
 }
+
+/* 🔍 SEARCH FUNCTION */
+document.getElementById("search").addEventListener("input", function(){
+  let value = this.value.toLowerCase();
+  let cards = document.querySelectorAll(".card");
+
+  cards.forEach(card=>{
+    let name = card.getAttribute("data-name");
+    if(name.includes(value)){
+      card.style.display="block";
+    }else{
+      card.style.display="none";
+    }
+  });
+});
 </script>
 
 </body>
