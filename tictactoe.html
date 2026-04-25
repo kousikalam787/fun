@@ -54,6 +54,29 @@
       padding:10px;
       border-radius:10px;
     }
+
+    /* POPUP */
+    #popup {
+      display:none;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.8);
+      justify-content:center;
+      align-items:center;
+    }
+
+    .popup-box {
+      background:#1e293b;
+      padding:20px;
+      border-radius:10px;
+      width:250px;
+    }
+
+    .popup-box button {
+      margin-top:10px;
+      width:100%;
+    }
   </style>
 </head>
 
@@ -79,6 +102,15 @@
   <button onclick="sendMsg()">Send</button>
 </div>
 
+<!-- POPUP -->
+<div id="popup">
+  <div class="popup-box">
+    <h2 id="winText">Winner</h2>
+    <button onclick="rematch()">🔁 Rematch</button>
+    <button onclick="restartGame()">🔄 Restart Room</button>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
@@ -97,6 +129,8 @@ let player = null;
 
 let gameRef = null;
 let chatRef = null;
+
+let gameEnded = false;
 
 /* ================= CREATE ROOM ================= */
 function createRoom(){
@@ -179,8 +213,11 @@ function startListeners(){
     document.getElementById("turn").innerText =
       "Turn: " + (data.players[data.turn] || "Waiting") + " ("+data.turn+")";
 
-    if(checkWin(data.board)){
-      document.getElementById("turn").innerText = "🏆 Game Over";
+    if(checkWin(data.board) && !gameEnded){
+      gameEnded = true;
+
+      let winner = data.players[data.turn === "X" ? "O" : "X"];
+      showPopup(winner);
     }
   });
 
@@ -209,7 +246,7 @@ function drawBoard(board){
 
 /* ================= MOVE ================= */
 function move(i){
-  if(!room) return;
+  if(gameEnded) return;
 
   let ref = db.ref("rooms/"+room);
 
@@ -237,6 +274,31 @@ function checkWin(b=[]){
     [0,4,8],[2,4,6]
   ];
   return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
+}
+
+/* ================= POPUP ================= */
+function showPopup(winner){
+  document.getElementById("winText").innerText =
+    "🏆 Winner: " + winner;
+
+  document.getElementById("popup").style.display = "flex";
+}
+
+/* ================= REMATCH ================= */
+function rematch(){
+  gameEnded = false;
+
+  db.ref("rooms/"+room).update({
+    board:["","","","","","","","",""],
+    turn:"X"
+  });
+
+  document.getElementById("popup").style.display = "none";
+}
+
+/* ================= RESTART ================= */
+function restartGame(){
+  location.reload();
 }
 
 /* ================= CHAT ================= */
