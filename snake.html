@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Snake Game PRO SWIPE</title>
+  <title>Snake PRO FIXED</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -11,7 +11,6 @@
       text-align:center;
       color:white;
       background:url('bgn.jpg') center/cover fixed;
-      touch-action:none;
       overflow:hidden;
     }
 
@@ -23,22 +22,15 @@
       z-index:-1;
     }
 
-    h2{margin-top:10px;}
-
     canvas{
       margin-top:10px;
       border-radius:12px;
       background:url('box.jpg') center/cover;
       display:block;
-      margin-left:auto;
-      margin-right:auto;
-      z-index:2;
-      position:relative;
+      margin:auto;
     }
 
-    .score{
-      margin:5px;
-    }
+    .score{margin:5px;}
 
     button{
       padding:10px 14px;
@@ -47,24 +39,29 @@
       border-radius:6px;
       background:#22c55e;
       color:white;
-      cursor:pointer;
+
+      /* 🔥 FIX BUTTON ISSUE */
       position:relative;
-      z-index:10;
+      z-index:100;
+      pointer-events:auto;
+      touch-action:manipulation;
     }
 
     button:active{transform:scale(0.95);}
 
-    /* CONTROLS */
+    /* CONTROLS FIX */
     .controls{
       position:relative;
-      z-index:10;
-      margin-top:10px;
+      z-index:100;
+      touch-action:none;
+      user-select:none;
     }
 
     .controls button{
       width:60px;
       height:60px;
       background:#1e293b;
+      z-index:100;
     }
 
     .controls button:active{
@@ -95,7 +92,7 @@
       z-index:9999;
     }
 
-    /* 🚀 LOADING SCREEN */
+    /* LOADING */
     #loadingScreen{
       position:fixed;
       inset:0;
@@ -113,12 +110,11 @@
       background:rgba(0,0,0,0.6);
     }
 
-    .loadBox{
+    .box{
       position:relative;
       z-index:1;
       width:80%;
       max-width:300px;
-      text-align:center;
     }
 
     .bar{
@@ -133,61 +129,58 @@
       width:0%;
       height:100%;
       background:#22c55e;
-      transition:0.2s;
     }
   </style>
 </head>
 
 <body>
 
-<!-- 🚀 LOADING -->
+<!-- LOADING -->
 <div id="loadingScreen">
-  <div class="loadBox">
-    <h2>🐍 Loading...</h2>
+  <div class="box">
+    <h2>Loading...</h2>
     <div class="bar"><div id="fill"></div></div>
     <p id="percent">0%</p>
   </div>
 </div>
 
-<h2>🐍 Snake PRO SWIPE</h2>
+<h2>🐍 Snake PRO</h2>
 <div class="score">Score: <span id="score">0</span></div>
 
 <canvas id="game" width="300" height="300"></canvas>
 
 <button onclick="restart()">Restart</button>
 
-<!-- START -->
 <div id="startScreen">
-  <h2>Tap Play</h2>
+  <h2>Tap to Start</h2>
   <button onclick="start()">PLAY</button>
 </div>
 
-<!-- GAME OVER -->
 <div id="gameOver">
-  <h2>Game Over 💀</h2>
+  <h2>Game Over</h2>
   <p>Score: <span id="final"></span></p>
   <button onclick="restart()">Play Again</button>
 </div>
 
 <!-- CONTROLS -->
 <div class="controls">
-  <button onclick="dir('up')">⬆️</button><br>
-  <button onclick="dir('left')">⬅️</button>
-  <button onclick="dir('down')">⬇️</button>
-  <button onclick="dir('right')">➡️</button>
+  <button ontouchstart="dir('up')" onclick="dir('up')">⬆️</button><br>
+  <button ontouchstart="dir('left')" onclick="dir('left')">⬅️</button>
+  <button ontouchstart="dir('down')" onclick="dir('down')">⬇️</button>
+  <button ontouchstart="dir('right')" onclick="dir('right')">➡️</button>
 </div>
 
 <script>
 
-/* 🚀 LOADING 0-100 */
-let load=0;
-let loadInt=setInterval(()=>{
-  load++;
-  document.getElementById("fill").style.width=load+"%";
-  document.getElementById("percent").innerText=load+"%";
+/* LOADING */
+let l=0;
+let load=setInterval(()=>{
+  l++;
+  document.getElementById("fill").style.width=l+"%";
+  document.getElementById("percent").innerText=l+"%";
 
-  if(load>=100){
-    clearInterval(loadInt);
+  if(l>=100){
+    clearInterval(load);
     setTimeout(()=>{
       document.getElementById("loadingScreen").style.display="none";
     },300);
@@ -201,7 +194,7 @@ const ctx=c.getContext("2d");
 let snake=[],food,d="RIGHT",score=0,game;
 let box=15;
 
-/* 🍎 APPLE */
+/* APPLE */
 let apple=new Image();
 apple.src="apple.png";
 
@@ -235,21 +228,18 @@ function random(){
 
 /* LOOP */
 function loop(){
-
   ctx.clearRect(0,0,300,300);
 
   snake.forEach((s,i)=>{
-    ctx.fillStyle=i? "#4ade80":"#22c55e";
+    ctx.fillStyle=i?"#4ade80":"#22c55e";
     ctx.fillRect(s.x,s.y,box,box);
   });
 
-  /* 🍎 GLOW APPLE */
+  /* APPLE GLOW */
   if(apple.complete){
     ctx.shadowColor="red";
     ctx.shadowBlur=12;
-
     ctx.drawImage(apple,food.x+2,food.y+2,box-4,box-4);
-
     ctx.shadowBlur=0;
   }else{
     ctx.fillStyle="red";
@@ -278,7 +268,7 @@ function loop(){
   snake.unshift({x,y});
 }
 
-/* 🔥 BUTTON + SWIPE FIX */
+/* 🔥 FIXED BUTTON + SWIPE */
 function dir(x){
   if(x==="left" && d!=="RIGHT") d="LEFT";
   if(x==="right" && d!=="LEFT") d="RIGHT";
@@ -286,7 +276,7 @@ function dir(x){
   if(x==="down" && d!=="UP") d="DOWN";
 }
 
-/* SWIPE CONTROL */
+/* SWIPE */
 let sx,sy;
 document.addEventListener("touchstart",e=>{
   sx=e.touches[0].clientX;
