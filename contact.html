@@ -18,7 +18,7 @@
       overflow:hidden;
     }
 
-    /* 🎥 FULL VIDEO BACKGROUND FIX */
+    /* 🎥 VIDEO BACKGROUND */
     #bgVideo{
       position:fixed;
       top:0;
@@ -37,12 +37,45 @@
       z-index:-1;
     }
 
-    /* CENTER LAYOUT */
+    /* TOP NAV */
+    .topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      padding:12px 15px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:rgba(0,0,0,0.5);
+      z-index:10;
+    }
+
+    .logo{
+      font-weight:bold;
+      font-size:16px;
+    }
+
+    .home-btn{
+      text-decoration:none;
+      color:white;
+      background:#22c55e;
+      padding:8px 12px;
+      border-radius:6px;
+      font-size:14px;
+    }
+
+    .home-btn:active{
+      transform:scale(0.95);
+    }
+
+    /* CENTER CARD */
     .container{
       height:100vh;
       display:flex;
       justify-content:center;
       align-items:center;
+      padding-top:60px;
     }
 
     .card{
@@ -66,7 +99,7 @@
       margin-bottom:20px;
     }
 
-    /* 📷 INSTAGRAM BUTTON */
+    /* INSTAGRAM BUTTON */
     .insta-btn{
       display:inline-block;
       padding:12px 18px;
@@ -75,11 +108,6 @@
       text-decoration:none;
       border-radius:10px;
       font-weight:bold;
-      transition:0.2s;
-    }
-
-    .insta-btn:active{
-      transform:scale(0.96);
     }
 
   </style>
@@ -92,7 +120,13 @@
   <source src="bg.mp4" type="video/mp4">
 </video>
 
-<!-- CENTER CARD -->
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">📞 Contact</div>
+  <a class="home-btn" href="home.html">🏠 Home</a>
+</div>
+
+<!-- CONTENT -->
 <div class="container">
 
   <div class="card">
