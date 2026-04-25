@@ -4,26 +4,37 @@
   <title>Fun Zone - Play Free Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="description" content="Play free online browser games like Snake, Tic Tac Toe and Ludo instantly.">
-
   <style>
     body{
       margin:0;
       font-family:Arial;
-      background:url('bg.jpg') no-repeat center center fixed;
-      background-size:cover;
       color:white;
+      min-height:100vh;
       display:flex;
       flex-direction:column;
-      min-height:100vh;
+      overflow-x:hidden;
     }
 
+    /* 🎥 VIDEO BACKGROUND */
+    .video-bg{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:-2;
+    }
+
+    /* DARK OVERLAY */
     body::after{
       content:"";
       position:fixed;
+      top:0;
+      left:0;
       width:100%;
       height:100%;
-      background:rgba(0,0,0,0.6);
+      background:rgba(0,0,0,0.65);
       z-index:-1;
     }
 
@@ -33,7 +44,7 @@
       justify-content:space-between;
       align-items:center;
       padding:12px 18px;
-      background:#111827;
+      background:rgba(0,0,0,0.6);
       position:sticky;
       top:0;
       z-index:1000;
@@ -69,7 +80,7 @@
 
     .hero p{
       font-size:14px;
-      opacity:0.8;
+      opacity:0.85;
       max-width:500px;
       margin:auto;
     }
@@ -83,15 +94,14 @@
       flex:1;
     }
 
-    /* CARD */
     .card{
-      background:#1f2937;
+      background:rgba(31,41,55,0.85);
       border-radius:15px;
       overflow:hidden;
       cursor:pointer;
       transition:0.3s;
-      box-shadow:0 5px 15px rgba(0,0,0,0.3);
       text-align:center;
+      box-shadow:0 5px 15px rgba(0,0,0,0.4);
     }
 
     .card:hover{
@@ -100,7 +110,6 @@
       color:black;
     }
 
-    /* THUMBNAIL PERFECT FIT */
     .thumb{
       width:100%;
       height:140px;
@@ -118,9 +127,8 @@
     footer{
       text-align:center;
       padding:15px;
-      background:#111827;
+      background:rgba(0,0,0,0.7);
       font-size:12px;
-      margin-top:auto;
     }
 
     footer a{
@@ -132,6 +140,11 @@
 </head>
 
 <body>
+
+<!-- 🎥 BACKGROUND VIDEO -->
+<video class="video-bg" autoplay muted loop playsinline>
+  <source src="bg.mp4" type="video/mp4">
+</video>
 
 <!-- NAV -->
 <nav>
@@ -147,7 +160,7 @@
 <!-- HERO -->
 <div class="hero">
   <h1>Play Free Online Games</h1>
-  <p>Enjoy smooth browser games instantly without download. Fun Zone brings fun and fast gaming experience.</p>
+  <p>Enjoy smooth browser games instantly without download. Fun Zone brings fast and fun gaming experience.</p>
 </div>
 
 <!-- GAMES -->
