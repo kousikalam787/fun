@@ -13,7 +13,6 @@
       text-align:center;
     }
 
-    /* LOADING */
     #loading {
       position:fixed;
       width:100%;
@@ -34,37 +33,43 @@
 
     .score {
       margin-top:10px;
-      font-size:18px;
     }
 
     button {
-      margin-top:15px;
+      margin-top:10px;
       padding:10px 20px;
       border:none;
       background:#22c55e;
       color:white;
       border-radius:5px;
-      font-size:16px;
       cursor:pointer;
     }
 
-    .controls {
-      margin-top:20px;
+    /* GAME OVER SCREEN */
+    #gameOver {
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.9);
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      z-index:1000;
     }
 
-    .controls button {
-      width:60px;
-      height:60px;
-      margin:5px;
-      font-size:20px;
+    #leaderboard {
+      margin-top:20px;
+      text-align:left;
     }
   </style>
 </head>
 
 <body>
 
-<!-- LOADING SCREEN -->
-<div id="loading">Loading Game...</div>
+<div id="loading">Loading...</div>
 
 <h1>🐍 Snake Game</h1>
 <div class="score">Score: <span id="score">0</span></div>
@@ -74,36 +79,59 @@
 <br>
 <button onclick="startGame()">Restart</button>
 
-<div class="controls">
-  <br>
-  <button onclick="setDir('up')">⬆️</button><br>
-  <button onclick="setDir('left')">⬅️</button>
-  <button onclick="setDir('down')">⬇️</button>
-  <button onclick="setDir('right')">➡️</button>
+<!-- GAME OVER -->
+<div id="gameOver">
+  <h2>Game Over 💀</h2>
+  <p>Your Score: <span id="finalScore"></span></p>
+
+  <h3>🏆 Top Players</h3>
+  <div id="leaderboard"></div>
+
+  <button onclick="restart()">Play Again</button>
 </div>
 
+<!-- SOUND -->
+<audio id="eatSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3"></audio>
+<audio id="overSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3"></audio>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
+  authDomain: "kousik-game.firebaseapp.com",
+  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kousik-game"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let username = localStorage.getItem("user") || "guest";
+
+// GAME VARS
 let canvas = document.getElementById("game");
 let ctx = canvas.getContext("2d");
 
-const box = 15;
+let box = 15;
 let snake, food, direction, score, game;
 
-// START GAME
+// START
 function startGame(){
-  snake = [{x:150, y:150}];
+  snake = [{x:150,y:150}];
   direction = "RIGHT";
   score = 0;
-
   food = randomFood();
 
   document.getElementById("score").innerText = score;
+  document.getElementById("gameOver").style.display = "none";
 
   clearInterval(game);
   game = setInterval(draw, 110);
 }
 
-// RANDOM FOOD (SAFE)
 function randomFood(){
   return {
     x: Math.floor(Math.random()*20)*box,
@@ -111,86 +139,111 @@ function randomFood(){
   };
 }
 
-// DRAW LOOP
 function draw(){
-  ctx.fillStyle = "#020617";
+  ctx.fillStyle="#020617";
   ctx.fillRect(0,0,300,300);
 
-  // snake
   for(let i=0;i<snake.length;i++){
     ctx.fillStyle = i===0 ? "#22c55e" : "#4ade80";
-    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+    ctx.fillRect(snake[i].x,snake[i].y,box,box);
   }
 
-  // food
-  ctx.fillStyle = "red";
-  ctx.fillRect(food.x, food.y, box, box);
+  ctx.fillStyle="red";
+  ctx.fillRect(food.x,food.y,box,box);
 
   let headX = snake[0].x;
   let headY = snake[0].y;
 
-  if(direction==="LEFT") headX -= box;
-  if(direction==="RIGHT") headX += box;
-  if(direction==="UP") headY -= box;
-  if(direction==="DOWN") headY += box;
+  if(direction==="LEFT") headX-=box;
+  if(direction==="RIGHT") headX+=box;
+  if(direction==="UP") headY-=box;
+  if(direction==="DOWN") headY+=box;
 
-  // collision check BEFORE adding head
-  if(
-    headX < 0 || headY < 0 ||
-    headX >= 300 || headY >= 300 ||
-    selfCollision(headX, headY)
-  ){
-    clearInterval(game);
-    setTimeout(() => {
-      alert("Game Over! Score: " + score);
-    }, 50);
+  if(headX<0 || headY<0 || headX>=300 || headY>=300 || selfCollision(headX,headY)){
+    gameOver();
     return;
   }
 
-  // eat
-  if(headX === food.x && headY === food.y){
+  if(headX===food.x && headY===food.y){
     score++;
     document.getElementById("score").innerText = score;
+    document.getElementById("eatSound").play();
     food = randomFood();
   } else {
     snake.pop();
   }
 
-  snake.unshift({x:headX, y:headY});
+  snake.unshift({x:headX,y:headY});
 }
 
-// SELF COLLISION SAFE
 function selfCollision(x,y){
   for(let i=0;i<snake.length;i++){
-    if(snake[i].x === x && snake[i].y === y){
+    if(snake[i].x===x && snake[i].y===y){
       return true;
     }
   }
   return false;
 }
 
-// KEYBOARD CONTROL (NO REVERSE BUG)
-document.addEventListener("keydown", e => {
+// GAME OVER
+function gameOver(){
+  clearInterval(game);
+  document.getElementById("overSound").play();
+
+  document.getElementById("finalScore").innerText = score;
+  document.getElementById("gameOver").style.display = "flex";
+
+  saveScore();
+  loadLeaderboard();
+}
+
+// SAVE SCORE
+function saveScore(){
+  db.ref("scores/" + username).set({
+    score: score
+  });
+}
+
+// LOAD LEADERBOARD
+function loadLeaderboard(){
+  db.ref("scores").once("value", snapshot=>{
+    let data = [];
+    snapshot.forEach(child=>{
+      data.push({
+        user: child.key,
+        score: child.val().score
+      });
+    });
+
+    data.sort((a,b)=>b.score-a.score);
+
+    let html="";
+    data.slice(0,5).forEach((d,i)=>{
+      html += `<p>${i+1}. ${d.user} - ${d.score}</p>`;
+    });
+
+    document.getElementById("leaderboard").innerHTML = html;
+  });
+}
+
+// CONTROLS
+document.addEventListener("keydown", e=>{
   if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT";
   if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP";
   if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";
   if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN";
 });
 
-// MOBILE CONTROL
-function setDir(dir){
-  if(dir==="left" && direction!=="RIGHT") direction="LEFT";
-  if(dir==="up" && direction!=="DOWN") direction="UP";
-  if(dir==="right" && direction!=="LEFT") direction="RIGHT";
-  if(dir==="down" && direction!=="UP") direction="DOWN";
+function restart(){
+  startGame();
 }
 
-// FAKE LOADING (SMOOTH ENTRY)
-window.onload = () => {
-  setTimeout(() => {
-    document.getElementById("loading").style.display = "none";
+// LOADING
+window.onload = ()=>{
+  setTimeout(()=>{
+    document.getElementById("loading").style.display="none";
     startGame();
-  }, 1000);
+  },1000);
 };
 </script>
 
