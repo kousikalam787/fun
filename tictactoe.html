@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tic Tac Toe Online</title>
+  <title>Multiplayer Tic Tac Toe</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -72,16 +72,13 @@
       width:250px;
     }
 
-    .top-bar {
+    .top {
       margin-top:10px;
     }
 
-    .leave-btn {
+    .leave {
       background:red;
       color:white;
-      padding:8px 12px;
-      border-radius:5px;
-      cursor:pointer;
     }
   </style>
 </head>
@@ -90,12 +87,12 @@
 
 <h2>❌⭕ Tic Tac Toe Online</h2>
 
-<div class="top-bar">
+<div class="top">
   <input id="roomId" placeholder="Room Code">
   <br>
   <button onclick="createRoom()">Create Room</button>
   <button onclick="joinRoom()">Join Room</button>
-  <button class="leave-btn" onclick="leaveRoom()">Leave</button>
+  <button class="leave" onclick="leaveRoom()">Leave</button>
 </div>
 
 <p id="status"></p>
@@ -119,7 +116,7 @@
   </div>
 </div>
 
-<!-- AUDIO -->
+<!-- SOUND -->
 <audio id="winSound" src="win.mp3"></audio>
 <audio id="tapSound" src="tap.mp3"></audio>
 
@@ -138,17 +135,19 @@ const db = firebase.database();
 let username = localStorage.getItem("user") || "Guest";
 let room = null;
 let player = null;
-let gameEnded = false;
 
 let gameRef = null;
 let chatRef = null;
 
-/* AUDIO FIX */
-function playSound(id){
-  let sound = document.getElementById(id);
-  if(!sound) return;
-  sound.currentTime = 0;
-  sound.play().catch(()=>{});
+let gameEnded = false;
+
+/* SOUND */
+function play(id){
+  let s = document.getElementById(id);
+  if(s){
+    s.currentTime = 0;
+    s.play().catch(()=>{});
+  }
 }
 
 /* CREATE */
@@ -156,14 +155,14 @@ function createRoom(){
   room = Math.random().toString(36).substr(2,5);
   player = "X";
 
-  let password = prompt("Set Room Password:");
+  let pass = prompt("Set Room Password:");
 
   let ref = db.ref("rooms/"+room);
 
   ref.set({
     board:["","","","","","","","",""],
     turn:"X",
-    password: password,
+    password: pass,
     players:{
       X: username,
       O: null
@@ -175,7 +174,7 @@ function createRoom(){
   document.getElementById("roomId").value = room;
   document.getElementById("status").innerText = "Room Created (X)";
 
-  startListeners();
+  start();
 }
 
 /* JOIN */
@@ -183,7 +182,7 @@ function joinRoom(){
   room = document.getElementById("roomId").value.trim();
   if(!room) return alert("Enter room code");
 
-  let pass = prompt("Enter Password:");
+  let pass = prompt("Password:");
   player = "O";
 
   let ref = db.ref("rooms/"+room);
@@ -206,12 +205,12 @@ function joinRoom(){
 
     document.getElementById("status").innerText = "Joined Room (O)";
 
-    startListeners();
+    start();
   });
 }
 
-/* LISTEN */
-function startListeners(){
+/* LISTENER */
+function start(){
 
   if(gameRef) gameRef.off();
   if(chatRef) chatRef.off();
@@ -223,45 +222,56 @@ function startListeners(){
     let data = snap.val();
     if(!data) return;
 
-    drawBoard(data.board);
+    draw(data.board);
+
+    let pX = data.players?.X || "Waiting";
+    let pO = data.players?.O || "Waiting";
+
+    let turnName = data.players?.[data.turn] || data.turn;
 
     document.getElementById("turn").innerText =
-      `Turn: ${data.turn}`;
+      `X: ${pX} | O: ${pO} | Turn: ${turnName}`;
 
-    if(checkWin(data.board) && !gameEnded){
+    let win = check(data.board);
+    let draw = data.board.every(x=>x!=="")
+
+    if((win || draw) && !gameEnded){
       gameEnded = true;
 
-      playSound("winSound");
+      play("winSound");
 
-      let winner = data.players[data.turn === "X" ? "O" : "X"];
-      showPopup("🏆 Winner: " + winner);
-    }
+      if(win){
+        let winnerSymbol = data.turn === "X" ? "O" : "X";
+        let winnerName = data.players[winnerSymbol];
 
-    if(data.board.every(x=>x!=="") && !gameEnded){
-      gameEnded = true;
-      playSound("winSound");
-      showPopup("🤝 Game Draw!");
+        if(winnerName === username){
+          show("🎉 You're Win!");
+        } else {
+          show("😔 You're Lost! Winner: " + winnerName);
+        }
+      } else {
+        show("🤝 Game Draw!");
+      }
     }
   });
 
-  chatRef.on("child_added", snap=>{
-    let d = snap.val();
+  chatRef.on("child_added", s=>{
+    let d = s.val();
     document.getElementById("messages").innerHTML +=
       `<p><b>${d.user}:</b> ${d.msg}</p>`;
   });
 }
 
 /* BOARD */
-function drawBoard(board){
-  let div = document.getElementById("board");
-  div.innerHTML="";
-
-  board.forEach((v,i)=>{
+function draw(b){
+  let d=document.getElementById("board");
+  d.innerHTML="";
+  b.forEach((v,i)=>{
     let c=document.createElement("div");
     c.className="cell";
     c.innerText=v;
     c.onclick=()=>move(i);
-    div.appendChild(c);
+    d.appendChild(c);
   });
 }
 
@@ -269,12 +279,12 @@ function drawBoard(board){
 function move(i){
   if(gameEnded) return;
 
-  playSound("tapSound");
+  play("tapSound");
 
-  let ref = db.ref("rooms/"+room);
+  let ref=db.ref("rooms/"+room);
 
   ref.once("value").then(snap=>{
-    let data = snap.val();
+    let data=snap.val();
     if(!data) return;
 
     if(data.board[i]!=="" || data.turn!==player) return;
@@ -290,7 +300,7 @@ function move(i){
 }
 
 /* WIN */
-function checkWin(b=[]){
+function check(b=[]){
   let p=[
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],
@@ -300,7 +310,7 @@ function checkWin(b=[]){
 }
 
 /* POPUP */
-function showPopup(t){
+function show(t){
   document.getElementById("winText").innerText=t;
   document.getElementById("popup").style.display="flex";
 }
@@ -322,13 +332,11 @@ function restartGame(){
   location.reload();
 }
 
-/* LEAVE ROOM */
+/* LEAVE */
 function leaveRoom(){
-
   if(room){
     db.ref("rooms/"+room+"/players/"+player).remove();
   }
-
   location.reload();
 }
 
