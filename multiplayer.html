@@ -73,14 +73,12 @@
 
 <div class="board" id="board"></div>
 
-<!-- CHAT -->
 <div class="chat">
   <div class="messages" id="messages"></div>
   <input id="msg" placeholder="Type message">
   <button onclick="sendMsg()">Send</button>
 </div>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
@@ -97,6 +95,9 @@ let username = localStorage.getItem("user") || "Guest";
 let room = null;
 let player = null;
 
+let gameRef = null;
+let chatRef = null;
+
 // CREATE ROOM
 function createRoom(){
   room = Math.random().toString(36).substr(2,5);
@@ -107,22 +108,22 @@ function createRoom(){
     turn:"X",
     players: {
       X: username,
-      O: ""
+      O: null
     }
   });
 
   document.getElementById("roomId").value = room;
   document.getElementById("status").innerText = "You are X ("+username+")";
 
-  listenGame();
-  listenChat();
+  startListeners();
 }
 
 // JOIN ROOM
 function joinRoom(){
   room = document.getElementById("roomId").value.trim();
-  player = "O";
+  if(!room) return alert("Enter room code");
 
+  player = "O";
   let ref = db.ref("rooms/"+room);
 
   ref.once("value").then(snap=>{
@@ -133,40 +134,56 @@ function joinRoom(){
 
     let data = snap.val();
 
-    if(data.players.O){
+    if(data.players && data.players.O){
       alert("Room full");
       return;
     }
 
-    ref.update({
-      "players/O": username
+    ref.child("players").update({
+      O: username
     });
 
     document.getElementById("status").innerText = "You are O ("+username+")";
 
-    listenGame();
-    listenChat();
+    startListeners();
   });
 }
 
-// LISTEN GAME
-function listenGame(){
-  db.ref("rooms/"+room).on("value", snap=>{
+// START LISTENERS (IMPORTANT FIX)
+function startListeners(){
+
+  if(gameRef) gameRef.off();
+  if(chatRef) chatRef.off();
+
+  gameRef = db.ref("rooms/"+room);
+  chatRef = db.ref("rooms/"+room+"/chat");
+
+  gameRef.on("value", snap=>{
     let data = snap.val();
     if(!data) return;
 
-    drawBoard(data.board);
+    drawBoard(data.board || []);
 
-    document.getElementById("turn").innerText =
-      "Turn: " + data.players[data.turn] + " ("+data.turn+")";
+    if(data.players){
+      document.getElementById("turn").innerText =
+        "Turn: " + (data.players[data.turn] || "Waiting") + " ("+data.turn+")";
+    }
 
     if(checkWin(data.board)){
-      alert("Game Over");
+      document.getElementById("turn").innerText = "🏆 Game Over";
     }
+  });
+
+  chatRef.on("child_added", snap=>{
+    let d = snap.val();
+    let div = document.getElementById("messages");
+
+    div.innerHTML += `<p><b>${d.user}:</b> ${d.msg}</p>`;
+    div.scrollTop = div.scrollHeight;
   });
 }
 
-// DRAW
+// DRAW BOARD
 function drawBoard(board){
   let div = document.getElementById("board");
   div.innerHTML="";
@@ -182,6 +199,8 @@ function drawBoard(board){
 
 // MOVE
 function move(i){
+  if(!room) return;
+
   let ref = db.ref("rooms/"+room);
 
   ref.once("value").then(snap=>{
@@ -201,17 +220,19 @@ function move(i){
 }
 
 // WIN CHECK
-function checkWin(b){
+function checkWin(b=[]){
   let p = [
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],
     [0,4,8],[2,4,6]
   ];
-  return p.some(x=>x.every(i=>b[i]!=="" && b[i]===b[x[0]]));
+  return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
 }
 
 // CHAT SEND
 function sendMsg(){
+  if(!room) return;
+
   let text = document.getElementById("msg").value;
   if(!text) return;
 
@@ -221,17 +242,6 @@ function sendMsg(){
   });
 
   document.getElementById("msg").value="";
-}
-
-// CHAT LISTEN
-function listenChat(){
-  db.ref("rooms/"+room+"/chat").on("child_added", snap=>{
-    let d = snap.val();
-    let div = document.getElementById("messages");
-
-    div.innerHTML += `<p><b>${d.user}:</b> ${d.msg}</p>`;
-    div.scrollTop = div.scrollHeight;
-  });
 }
 </script>
 
