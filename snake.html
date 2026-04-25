@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Snake Game</title>
+  <title>Snake Game PRO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -11,18 +11,6 @@
       background:#0f172a;
       color:white;
       text-align:center;
-    }
-
-    #loading {
-      position:fixed;
-      width:100%;
-      height:100%;
-      background:#020617;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:24px;
-      z-index:999;
     }
 
     canvas {
@@ -45,17 +33,47 @@
       cursor:pointer;
     }
 
-    /* 🎮 MOBILE CONTROLS */
-    .controls {
-      margin-top:20px;
+    /* START SCREEN */
+    #startScreen{
+      position:fixed;
+      top:0;left:0;
+      width:100%;height:100%;
+      background:rgba(0,0,0,0.92);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
     }
 
+    .diff-btns button{
+      margin:8px;
+      width:120px;
+    }
+
+    .selected{
+      background:#16a34a !important;
+    }
+
+    /* GAME OVER */
+    #gameOver {
+      display:none;
+      position:fixed;
+      top:0;left:0;
+      width:100%;height:100%;
+      background:rgba(0,0,0,0.9);
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      z-index:1000;
+    }
+
+    /* CONTROLS */
     .controls button {
       width:60px;
       height:60px;
       margin:5px;
       font-size:20px;
-      border:none;
       border-radius:10px;
       background:#1e293b;
       color:white;
@@ -64,37 +82,41 @@
     .controls button:active {
       background:#22c55e;
     }
-
-    /* GAME OVER */
-    #gameOver {
-      display:none;
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,0.9);
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-      z-index:1000;
-    }
   </style>
 </head>
 
 <body>
 
-<div id="loading">Loading...</div>
-
-<h1>🐍 Snake Game</h1>
+<h1>🐍 Snake Game PRO</h1>
 <div class="score">Score: <span id="score">0</span></div>
 
 <canvas id="game" width="300" height="300"></canvas>
 
 <br>
-<button onclick="startGame()">Restart</button>
+<button onclick="restart()">Restart</button>
 
-<!-- 🎮 CONTROLS -->
+<!-- START SCREEN -->
+<div id="startScreen">
+  <h1>🐍 Snake Game</h1>
+  <p>Select Difficulty</p>
+
+  <div class="diff-btns">
+    <button onclick="setDifficulty('easy',this)">Easy</button>
+    <button onclick="setDifficulty('medium',this)">Medium</button>
+    <button onclick="setDifficulty('hard',this)">Hard</button>
+  </div>
+
+  <button onclick="begin()" style="margin-top:20px;">PLAY GAME</button>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameOver">
+  <h2>Game Over 💀</h2>
+  <p>Your Score: <span id="finalScore"></span></p>
+  <button onclick="restart()">Play Again</button>
+</div>
+
+<!-- CONTROLS -->
 <div class="controls">
   <button onclick="setDir('up')">⬆️</button><br>
   <button onclick="setDir('left')">⬅️</button>
@@ -102,55 +124,56 @@
   <button onclick="setDir('right')">➡️</button>
 </div>
 
-<!-- GAME OVER -->
-<div id="gameOver">
-  <h2>Game Over 💀</h2>
-  <p>Your Score: <span id="finalScore"></span></p>
-
-  <h3>🏆 Leaderboard</h3>
-  <div id="leaderboard"></div>
-
-  <button onclick="restart()">Play Again</button>
-</div>
-
-<!-- SOUND -->
-<audio id="eatSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3"></audio>
-<audio id="overSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3"></audio>
-
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
-  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const box = 15;
 
-let username = localStorage.getItem("user") || "guest";
+let snake = [];
+let food = {};
+let direction = "RIGHT";
+let score = 0;
+let gameInterval = null;
 
-// GAME VARS
-let canvas = document.getElementById("game");
-let ctx = canvas.getContext("2d");
+let speed = 110;
+let started = false;
 
-let box = 15;
-let snake, food, direction, score, game;
+/* DIFFICULTY */
+function setDifficulty(level, btn){
 
-// START
+  document.querySelectorAll(".diff-btns button")
+    .forEach(b=>b.classList.remove("selected"));
+
+  btn.classList.add("selected");
+
+  if(level==="easy") speed = 150;
+  if(level==="medium") speed = 110;
+  if(level==="hard") speed = 70;
+}
+
+/* START GAME */
+function begin(){
+  document.getElementById("startScreen").style.display="none";
+  startGame();
+  started = true;
+}
+
+/* INIT */
 function startGame(){
+
+  clearInterval(gameInterval); // IMPORTANT FIX
+
   snake = [{x:150,y:150}];
   direction = "RIGHT";
   score = 0;
+
   food = randomFood();
 
   document.getElementById("score").innerText = score;
   document.getElementById("gameOver").style.display = "none";
 
-  clearInterval(game);
-  game = setInterval(draw, 110);
+  gameInterval = setInterval(draw, speed);
 }
 
 function randomFood(){
@@ -160,17 +183,17 @@ function randomFood(){
   };
 }
 
+/* GAME LOOP */
 function draw(){
+
   ctx.fillStyle="#020617";
   ctx.fillRect(0,0,300,300);
 
-  // snake
   for(let i=0;i<snake.length;i++){
     ctx.fillStyle = i===0 ? "#22c55e" : "#4ade80";
     ctx.fillRect(snake[i].x,snake[i].y,box,box);
   }
 
-  // food
   ctx.fillStyle="red";
   ctx.fillRect(food.x,food.y,box,box);
 
@@ -182,17 +205,18 @@ function draw(){
   if(direction==="UP") headY-=box;
   if(direction==="DOWN") headY+=box;
 
-  // collision
-  if(headX<0 || headY<0 || headX>=300 || headY>=300 || selfCollision(headX,headY)){
+  if(
+    headX<0 || headY<0 ||
+    headX>=300 || headY>=300 ||
+    selfCollision(headX,headY)
+  ){
     gameOver();
     return;
   }
 
-  // eat
   if(headX===food.x && headY===food.y){
     score++;
     document.getElementById("score").innerText = score;
-    document.getElementById("eatSound").play();
     food = randomFood();
   } else {
     snake.pop();
@@ -201,16 +225,12 @@ function draw(){
   snake.unshift({x:headX,y:headY});
 }
 
+/* COLLISION */
 function selfCollision(x,y){
-  for(let i=0;i<snake.length;i++){
-    if(snake[i].x===x && snake[i].y===y){
-      return true;
-    }
-  }
-  return false;
+  return snake.some(s=>s.x===x && s.y===y);
 }
 
-// 🎮 BUTTON CONTROL
+/* CONTROLS */
 function setDir(dir){
   if(dir==="left" && direction!=="RIGHT") direction="LEFT";
   if(dir==="up" && direction!=="DOWN") direction="UP";
@@ -218,66 +238,18 @@ function setDir(dir){
   if(dir==="down" && direction!=="UP") direction="DOWN";
 }
 
-// ⌨️ KEYBOARD
-document.addEventListener("keydown", e=>{
-  if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT";
-  if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP";
-  if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";
-  if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN";
-});
-
-// GAME OVER
+/* GAME OVER */
 function gameOver(){
-  clearInterval(game);
-  document.getElementById("overSound").play();
+  clearInterval(gameInterval);
 
   document.getElementById("finalScore").innerText = score;
   document.getElementById("gameOver").style.display = "flex";
-
-  saveScore();
-  loadLeaderboard();
 }
 
-// SAVE SCORE
-function saveScore(){
-  db.ref("scores/" + username).set({
-    score: score
-  });
-}
-
-// LOAD LEADERBOARD
-function loadLeaderboard(){
-  db.ref("scores").once("value", snapshot=>{
-    let data=[];
-    snapshot.forEach(child=>{
-      data.push({
-        user: child.key,
-        score: child.val().score
-      });
-    });
-
-    data.sort((a,b)=>b.score-a.score);
-
-    let html="";
-    data.slice(0,5).forEach((d,i)=>{
-      html += `<p>${i+1}. ${d.user} - ${d.score}</p>`;
-    });
-
-    document.getElementById("leaderboard").innerHTML = html;
-  });
-}
-
+/* RESTART */
 function restart(){
   startGame();
 }
-
-// LOADING
-window.onload = ()=>{
-  setTimeout(()=>{
-    document.getElementById("loading").style.display="none";
-    startGame();
-  },1000);
-};
 </script>
 
 </body>
