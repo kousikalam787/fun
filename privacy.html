@@ -3,21 +3,172 @@
 <head>
   <title>Privacy Policy - Fun Zone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial;
+    }
+
+    body{
+      color:white;
+      min-height:100vh;
+      overflow:hidden;
+    }
+
+    /* 🎥 VIDEO BACKGROUND */
+    #bgVideo{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:-2;
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.65);
+      z-index:-1;
+    }
+
+    /* TOP BAR */
+    .topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      padding:12px 15px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:rgba(0,0,0,0.5);
+      z-index:10;
+    }
+
+    .logo{
+      font-weight:bold;
+      font-size:16px;
+    }
+
+    .home-btn{
+      text-decoration:none;
+      color:white;
+      background:#22c55e;
+      padding:8px 12px;
+      border-radius:6px;
+      font-size:14px;
+    }
+
+    .home-btn:active{
+      transform:scale(0.95);
+    }
+
+    /* CENTER */
+    .container{
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding-top:60px;
+    }
+
+    /* GLASS CARD */
+    .card{
+      width:90%;
+      max-width:550px;
+      background:rgba(30,41,59,0.75);
+      padding:30px 25px;
+      border-radius:15px;
+      box-shadow:0 0 25px rgba(0,0,0,0.6);
+      backdrop-filter:blur(6px);
+      text-align:left;
+      overflow-y:auto;
+      max-height:80vh;
+    }
+
+    .card h1{
+      text-align:center;
+      margin-bottom:15px;
+      font-size:24px;
+    }
+
+    .card h3{
+      margin-top:15px;
+      color:#22c55e;
+    }
+
+    .card p{
+      font-size:14px;
+      opacity:0.9;
+      line-height:1.6;
+      margin-top:8px;
+    }
+
+  </style>
 </head>
 
-<body style="font-family:Arial; padding:20px;">
+<body>
 
-<h1>Privacy Policy</h1>
+<!-- 🎥 BACKGROUND VIDEO -->
+<video autoplay muted loop id="bgVideo">
+  <source src="bg.mp4" type="video/mp4">
+</video>
 
-<p>Fun Zone uses third-party advertising services like Google AdSense.</p>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">🔒 Privacy Policy</div>
+  <a class="home-btn" href="home.html">🏠 Home</a>
+</div>
 
-<p>These services may use cookies to show relevant ads.</p>
+<!-- CONTENT -->
+<div class="container">
 
-<p>We do not collect personal data directly.</p>
+  <div class="card">
 
-<p>By using this site, you agree to cookies usage by third-party services.</p>
+    <h1>🔒 Privacy Policy</h1>
 
-<p>Contact: support@funzone.com</p>
+    <p>
+      Welcome to <b>Fun Zone</b>. Your privacy is important to us. This page explains how we handle your information.
+    </p>
+
+    <h3>📌 Information We Collect</h3>
+    <p>
+      We may collect basic data like username, game scores, and usage activity to improve your experience.
+    </p>
+
+    <h3>🎮 Game Data</h3>
+    <p>
+      Your game progress, scores, and room data (for multiplayer games) may be temporarily stored in our database.
+    </p>
+
+    <h3>📢 Ads (Google AdSense)</h3>
+    <p>
+      We may use Google AdSense to show ads. Third-party vendors may use cookies to serve ads based on your visits.
+    </p>
+
+    <h3>🔐 Security</h3>
+    <p>
+      We use secure services (like Firebase) to protect your data, but no system is 100% secure.
+    </p>
+
+    <h3>📞 Contact</h3>
+    <p>
+      If you have any questions, visit the Contact page or reach us via Instagram.
+    </p>
+
+    <p style="text-align:center;margin-top:15px;">
+      🚀 Last updated: 2026
+    </p>
+
+  </div>
+
+</div>
 
 </body>
 </html>
