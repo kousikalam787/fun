@@ -2,8 +2,6 @@
 <html>
 <head>
   <title>Fun Zone Login</title>
-
-  <!-- 📱 MOBILE FIX -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -26,10 +24,6 @@
       max-width:90%;
     }
 
-    h2 {
-      text-align:center;
-    }
-
     input {
       width:100%;
       margin:8px 0;
@@ -42,22 +36,16 @@
       width:100%;
       padding:10px;
       margin-top:10px;
-      cursor:pointer;
       background:#22c55e;
       border:none;
       color:white;
-      border-radius:5px;
-    }
-
-    button:hover {
-      background:#16a34a;
+      cursor:pointer;
     }
 
     #msg {
       margin-top:10px;
-      color:#f87171;
+      color:red;
       text-align:center;
-      font-size:14px;
     }
   </style>
 </head>
@@ -94,12 +82,11 @@ import { app } from "./firebase.js";
 
 const db = getDatabase(app);
 
-// 🔔 MESSAGE
 function msg(t){
   document.getElementById("msg").innerText = t;
 }
 
-// 🆕 REGISTER
+// REGISTER
 window.register = function() {
   let name = document.getElementById("name").value.trim();
   let username = document.getElementById("username").value.trim();
@@ -109,12 +96,10 @@ window.register = function() {
     return msg("All fields required");
   }
 
-  let email = username + "@game.local";
+  let email = username + "@gmail.com";
 
   createUserWithEmailAndPassword(auth, email, password)
     .then(() => {
-
-      // SAVE USER DATA
       set(ref(db, "users/" + username), {
         name: name,
         username: username
@@ -123,13 +108,13 @@ window.register = function() {
       localStorage.setItem("user", username);
       window.location.href = "home.html";
     })
-    .catch((e) => {
+    .catch(e => {
       msg(e.message);
       console.log(e);
     });
 }
 
-// 🔐 LOGIN
+// LOGIN
 window.login = function() {
   let username = document.getElementById("username").value.trim();
   let password = document.getElementById("password").value.trim();
@@ -138,14 +123,14 @@ window.login = function() {
     return msg("Enter username & password");
   }
 
-  let email = username + "@game.local";
+  let email = username + "@gmail.com";
 
   signInWithEmailAndPassword(auth, email, password)
     .then(() => {
       localStorage.setItem("user", username);
       window.location.href = "home.html";
     })
-    .catch((e) => {
+    .catch(e => {
       msg("Invalid username or password");
       console.log(e);
     });
