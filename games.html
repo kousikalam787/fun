@@ -54,6 +54,18 @@ nav a:hover {
 .card:hover {
   background:#22c55e;
 }
+
+/* NEW BUTTON STYLE */
+.play-btn {
+  margin-top:10px;
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  background:#22c55e;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+}
 </style>
 </head>
 
@@ -69,8 +81,19 @@ nav a:hover {
 
 <div class="main">
   <h2>🎮 Games</h2>
+
   <div class="card">🐍 Snake Game</div>
   <div class="card">❌ Tic Tac Toe</div>
+
+  <!-- 🔥 NEW GAME ADDED -->
+  <div class="card">
+    🔥 2 Player Battle Game
+    <br>
+    <button class="play-btn" onclick="location.href='battle-game.html'">
+      ▶ Play
+    </button>
+  </div>
+
 </div>
 
 </body>
