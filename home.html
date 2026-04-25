@@ -22,22 +22,72 @@
       z-index:-1;
     }
 
+    /* NAV */
     nav{
       display:flex;
       justify-content:space-between;
       align-items:center;
       background:rgba(0,0,0,0.7);
-      padding:10px;
+      padding:10px 15px;
+      flex-wrap:wrap;
+    }
+
+    .nav-links{
+      display:flex;
+      gap:12px;
       flex-wrap:wrap;
     }
 
     .nav-links a{
       color:white;
       text-decoration:none;
-      margin:5px;
+      font-size:14px;
       font-weight:bold;
     }
 
+    .nav-links a:hover{
+      color:#22c55e;
+    }
+
+    /* PROFILE */
+    .profile{
+      margin-left:auto;
+      position:relative;
+      cursor:pointer;
+    }
+
+    .avatar{
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      background:#22c55e;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:bold;
+    }
+
+    .dropdown{
+      position:absolute;
+      top:50px;
+      right:0;
+      background:#1e293b;
+      padding:15px;
+      border-radius:10px;
+      display:none;
+      min-width:150px;
+    }
+
+    .dropdown button{
+      width:100%;
+      padding:8px;
+      border:none;
+      background:red;
+      color:white;
+      border-radius:5px;
+    }
+
+    /* MAIN */
     .main{
       padding:20px;
     }
@@ -49,27 +99,45 @@
       border-radius:15px;
       cursor:pointer;
       transition:0.3s;
+      font-size:18px;
     }
 
     .card:hover{
       transform:scale(1.05);
       background:#22c55e;
     }
+
   </style>
 </head>
 
 <body>
 
+<!-- NAV -->
 <nav>
+
   <div class="nav-links">
-    <a href="#">Home</a>
-    <a href="#">Games</a>
+    <a href="home.html">Home</a>
+    <a href="games.html">Games</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="privacy.html">Policy</a>
   </div>
+
+  <div class="profile" onclick="toggleMenu()">
+    <div class="avatar" id="avatar">U</div>
+
+    <div class="dropdown" id="menu">
+      <p id="name">User</p>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
 </nav>
 
+<!-- MAIN -->
 <div class="main">
 
-  <h2>🎮 Fun Zone Games</h2>
+  <h2>🎮 Welcome to Fun Zone</h2>
 
   <!-- SNAKE -->
   <div class="card" onclick="openGame('snake.html')">
@@ -81,16 +149,58 @@
     ❌⭕ Tic Tac Toe Online
   </div>
 
-  <!-- LUDO LITE -->
+  <!-- LUDO ADDED PROPERLY -->
   <div class="card" onclick="openGame('ludo.html')">
-    🎲 Ludo Lite Online
+    🎲 Ludo Lite Online (Multiplayer)
   </div>
 
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
 <script>
-function openGame(game){
-  window.location.href = game;
+const firebaseConfig={
+  apiKey:"AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
+  authDomain:"kousik-game.firebaseapp.com",
+  databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+let username=localStorage.getItem("user");
+
+if(!username){
+  window.location.href="index.html";
+}
+
+document.getElementById("avatar").innerText=username.charAt(0).toUpperCase();
+document.getElementById("name").innerText=username;
+
+/* MENU */
+function toggleMenu(){
+  let m=document.getElementById("menu");
+  m.style.display=m.style.display==="block"?"none":"block";
+}
+
+/* LOGOUT */
+function logout(){
+  firebase.auth().signOut().then(()=>{
+    localStorage.removeItem("user");
+    window.location.href="index.html";
+  });
+}
+
+/* CLOSE MENU */
+window.onclick=function(e){
+  if(!e.target.closest(".profile")){
+    document.getElementById("menu").style.display="none";
+  }
+}
+
+/* OPEN GAME */
+function openGame(g){
+  window.location.href=g;
 }
 </script>
 
