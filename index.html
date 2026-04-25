@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO -->
-  <meta name="description" content="Fun Zone - Play free online games like Snake, Tic Tac Toe and Ludo instantly in your browser.">
-  <meta name="keywords" content="free games, online games, ludo, snake game, tic tac toe, play games">
+  <meta name="description" content="Fun Zone is a free online gaming platform where you can play Snake, Tic Tac Toe, and Ludo instantly without downloading anything.">
+  <meta name="keywords" content="free games, online games, ludo, snake game, tic tac toe, browser games">
 
-  <!-- AdSense verification (replace with your own ca-pub id) -->
+  <!-- AdSense verification (replace with your ID) -->
   <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXX">
 
   <style>
@@ -33,7 +33,7 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      background:rgba(0,0,0,0.7);
+      background:rgba(0,0,0,0.75);
       padding:10px 15px;
       flex-wrap:wrap;
     }
@@ -55,50 +55,14 @@
       color:#22c55e;
     }
 
-    .profile{
-      margin-left:auto;
-      position:relative;
-      cursor:pointer;
-    }
-
-    .avatar{
-      width:40px;
-      height:40px;
-      border-radius:50%;
-      background:#22c55e;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:bold;
-    }
-
-    .dropdown{
-      position:absolute;
-      top:50px;
-      right:0;
-      background:#1e293b;
-      padding:15px;
-      border-radius:10px;
-      display:none;
-      min-width:150px;
-    }
-
-    .dropdown button{
-      width:100%;
-      padding:8px;
-      border:none;
-      background:red;
-      color:white;
-      border-radius:5px;
-    }
-
     .main{
       padding:20px;
     }
 
     .intro{
+      font-size:15px;
+      line-height:1.6;
       margin-bottom:20px;
-      font-size:16px;
       opacity:0.9;
     }
 
@@ -113,15 +77,16 @@
     }
 
     .card:hover{
-      transform:scale(1.05);
+      transform:scale(1.03);
       background:#22c55e;
     }
 
     footer{
       text-align:center;
       padding:20px;
-      background:rgba(0,0,0,0.8);
+      background:rgba(0,0,0,0.85);
       margin-top:20px;
+      font-size:14px;
     }
 
     footer a{
@@ -138,19 +103,9 @@
 <nav>
   <div class="nav-links">
     <a href="index.html">Home</a>
-    <a href="games.html">Games</a>
     <a href="about.html">About</a>
+    <a href="privacy.html">Privacy</a>
     <a href="contact.html">Contact</a>
-    <a href="privacy.html">Policy</a>
-  </div>
-
-  <div class="profile" onclick="toggleMenu()">
-    <div class="avatar" id="avatar">U</div>
-
-    <div class="dropdown" id="menu">
-      <p id="name">User</p>
-      <button onclick="logout()">Logout</button>
-    </div>
   </div>
 </nav>
 
@@ -160,7 +115,8 @@
   <h2>🎮 Welcome to Fun Zone</h2>
 
   <p class="intro">
-    Play free online browser games instantly without download. Enjoy Snake, Tic Tac Toe and Ludo with smooth gameplay.
+    Fun Zone is a free online gaming platform where users can play simple browser games instantly without downloading anything. 
+    Enjoy games like Snake, Tic Tac Toe, and Ludo on mobile and desktop.
   </p>
 
   <div class="card" onclick="openGame('snake.html')">
@@ -179,23 +135,17 @@
 
 <!-- FOOTER -->
 <footer>
-  <p>© 2026 Fun Zone</p>
-  <a href="privacy.html">Privacy Policy</a>
+  <p>© 2026 Fun Zone | All Rights Reserved</p>
   <a href="about.html">About</a>
+  <a href="privacy.html">Privacy Policy</a>
   <a href="contact.html">Contact</a>
+
+  <p style="font-size:12px; opacity:0.7; margin-top:10px;">
+    This website provides free browser games for entertainment purposes.
+  </p>
 </footer>
 
 <script>
-function toggleMenu(){
-  let m=document.getElementById("menu");
-  m.style.display=m.style.display==="block"?"none":"block";
-}
-
-function logout(){
-  localStorage.removeItem("user");
-  window.location.href="index.html";
-}
-
 function openGame(g){
   window.location.href=g;
 }
