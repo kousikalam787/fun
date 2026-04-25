@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Online Tic Tac Toe Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin:0;
+      font-family:Arial;
+      background:#0f172a;
+      color:white;
+      text-align:center;
+    }
+
+    input, button {
+      padding:10px;
+      margin:5px;
+      border:none;
+      border-radius:5px;
+    }
+
+    .board {
+      display:grid;
+      grid-template-columns:repeat(3,90px);
+      gap:10px;
+      justify-content:center;
+      margin-top:20px;
+    }
+
+    .cell {
+      width:90px;
+      height:90px;
+      background:#1e293b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:35px;
+      cursor:pointer;
+      border-radius:10px;
+    }
+
+    .chat {
+      margin-top:20px;
+      max-width:300px;
+      margin-left:auto;
+      margin-right:auto;
+      text-align:left;
+    }
+
+    .messages {
+      height:150px;
+      overflow:auto;
+      background:#020617;
+      padding:10px;
+      border-radius:10px;
+      font-size:14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>🌐 Multiplayer Tic Tac Toe</h2>
+
+<input id="roomId" placeholder="Room Code">
+<br>
+<button onclick="createRoom()">Create Room</button>
+<button onclick="joinRoom()">Join Room</button>
+
+<p id="status"></p>
+<p id="turn"></p>
+
+<div class="board" id="board"></div>
+
+<div class="chat">
+  <div class="messages" id="messages"></div>
+  <input id="msg" placeholder="Type message">
+  <button onclick="sendMsg()">Send</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
+  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let username = localStorage.getItem("user") || "Guest";
+let room = null;
+let player = null;
+
+let gameRef = null;
+let chatRef = null;
+
+// CREATE ROOM
+function createRoom(){
+  room = Math.random().toString(36).substr(2,5);
+  player = "X";
+
+  db.ref("rooms/"+room).set({
+    board:["","","","","","","","",""],
+    turn:"X",
+    players: {
+      X: username,
+      O: null
+    }
+  });
+
+  document.getElementById("roomId").value = room;
+  document.getElementById("status").innerText = "You are X ("+username+")";
+
+  startListeners();
+}
+
+// JOIN ROOM
+function joinRoom(){
+  room = document.getElementById("roomId").value.trim();
+  if(!room) return alert("Enter room code");
+
+  player = "O";
+  let ref = db.ref("rooms/"+room);
+
+  ref.once("value").then(snap=>{
+    if(!snap.exists()){
+      alert("Room not found");
+      return;
+    }
+
+    let data = snap.val();
+
+    if(data.players && data.players.O){
+      alert("Room full");
+      return;
+    }
+
+    ref.child("players").update({
+      O: username
+    });
+
+    document.getElementById("status").innerText = "You are O ("+username+")";
+
+    startListeners();
+  });
+}
+
+// START LISTENERS (IMPORTANT FIX)
+function startListeners(){
+
+  if(gameRef) gameRef.off();
+  if(chatRef) chatRef.off();
+
+  gameRef = db.ref("rooms/"+room);
+  chatRef = db.ref("rooms/"+room+"/chat");
+
+  gameRef.on("value", snap=>{
+    let data = snap.val();
+    if(!data) return;
+
+    drawBoard(data.board || []);
+
+    if(data.players){
+      document.getElementById("turn").innerText =
+        "Turn: " + (data.players[data.turn] || "Waiting") + " ("+data.turn+")";
+    }
+
+    if(checkWin(data.board)){
+      document.getElementById("turn").innerText = "🏆 Game Over";
+    }
+  });
+
+  chatRef.on("child_added", snap=>{
+    let d = snap.val();
+    let div = document.getElementById("messages");
+
+    div.innerHTML += `<p><b>${d.user}:</b> ${d.msg}</p>`;
+    div.scrollTop = div.scrollHeight;
+  });
+}
+
+// DRAW BOARD
+function drawBoard(board){
+  let div = document.getElementById("board");
+  div.innerHTML="";
+
+  board.forEach((val,i)=>{
+    let cell=document.createElement("div");
+    cell.classList.add("cell");
+    cell.innerText=val;
+    cell.onclick=()=>move(i);
+    div.appendChild(cell);
+  });
+}
+
+// MOVE
+function move(i){
+  if(!room) return;
+
+  let ref = db.ref("rooms/"+room);
+
+  ref.once("value").then(snap=>{
+    let data = snap.val();
+    if(!data) return;
+
+    if(data.board[i]!=="" || data.turn!==player) return;
+
+    data.board[i] = player;
+    data.turn = player==="X" ? "O" : "X";
+
+    ref.update({
+      board: data.board,
+      turn: data.turn
+    });
+  });
+}
+
+// WIN CHECK
+function checkWin(b=[]){
+  let p = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
+}
+
+// CHAT SEND
+function sendMsg(){
+  if(!room) return;
+
+  let text = document.getElementById("msg").value;
+  if(!text) return;
+
+  db.ref("rooms/"+room+"/chat").push({
+    user: username,
+    msg: text
+  });
+
+  document.getElementById("msg").value="";
+}
+</script>
+
+</body>
+</html>
