@@ -2,6 +2,10 @@
 <html>
 <head>
   <title>Fun Zone Login</title>
+
+  <!-- 📱 MOBILE FIX -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       background:#0f172a;
@@ -11,32 +15,57 @@
       justify-content:center;
       align-items:center;
       height:100vh;
+      margin:0;
     }
+
     .box {
       background:#1e293b;
       padding:20px;
       border-radius:10px;
       width:300px;
+      max-width:90%;
     }
+
+    h2 {
+      text-align:center;
+    }
+
     input {
       width:100%;
-      margin:10px 0;
+      margin:8px 0;
       padding:10px;
+      border:none;
+      border-radius:5px;
     }
+
     button {
       width:100%;
       padding:10px;
+      margin-top:10px;
       cursor:pointer;
       background:#22c55e;
       border:none;
       color:white;
+      border-radius:5px;
+    }
+
+    button:hover {
+      background:#16a34a;
+    }
+
+    #msg {
+      margin-top:10px;
+      color:#f87171;
+      text-align:center;
+      font-size:14px;
     }
   </style>
 </head>
+
 <body>
 
 <div class="box">
-  <h2>Fun Zone</h2>
+  <h2>🎮 Fun Zone</h2>
 
   <input id="name" placeholder="Your Name">
   <input id="username" placeholder="Username">
@@ -58,24 +87,32 @@ import {
 import {
   getDatabase,
   ref,
-  set,
-  get
+  set
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 import { app } from "./firebase.js";
 
 const db = getDatabase(app);
 
-// REGISTER
+// 🔔 MESSAGE
+function msg(t){
+  document.getElementById("msg").innerText = t;
+}
+
+// 🆕 REGISTER
 window.register = function() {
-  let name = document.getElementById("name").value;
-  let username = document.getElementById("username").value;
-  let password = document.getElementById("password").value;
+  let name = document.getElementById("name").value.trim();
+  let username = document.getElementById("username").value.trim();
+  let password = document.getElementById("password").value.trim();
+
+  if (!name || !username || !password) {
+    return msg("All fields required");
+  }
 
   let email = username + "@game.local";
 
   createUserWithEmailAndPassword(auth, email, password)
-    .then(userCredential => {
+    .then(() => {
 
       // SAVE USER DATA
       set(ref(db, "users/" + username), {
@@ -86,13 +123,20 @@ window.register = function() {
       localStorage.setItem("user", username);
       window.location.href = "home.html";
     })
-    .catch(e => msg(e.message));
+    .catch((e) => {
+      msg(e.message);
+      console.log(e);
+    });
 }
 
-// LOGIN
+// 🔐 LOGIN
 window.login = function() {
-  let username = document.getElementById("username").value;
-  let password = document.getElementById("password").value;
+  let username = document.getElementById("username").value.trim();
+  let password = document.getElementById("password").value.trim();
+
+  if (!username || !password) {
+    return msg("Enter username & password");
+  }
 
   let email = username + "@game.local";
 
@@ -101,11 +145,10 @@ window.login = function() {
       localStorage.setItem("user", username);
       window.location.href = "home.html";
     })
-    .catch(() => msg("Wrong username/password"));
-}
-
-function msg(t){
-  document.getElementById("msg").innerText = t;
+    .catch((e) => {
+      msg("Invalid username or password");
+      console.log(e);
+    });
 }
 </script>
 
