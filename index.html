@@ -4,8 +4,7 @@
   <title>Fun Zone - Play Free Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="description" content="Play free online games like Snake, Tic Tac Toe, and Ludo instantly.">
-  <meta name="keywords" content="free games, online games, ludo, snake, tic tac toe">
+  <meta name="description" content="Play free online browser games like Snake, Tic Tac Toe and Ludo instantly.">
 
   <style>
     body{
@@ -64,8 +63,8 @@
     }
 
     .hero h1{
-      margin:10px 0;
       font-size:24px;
+      margin:10px 0;
     }
 
     .hero p{
@@ -75,23 +74,24 @@
       margin:auto;
     }
 
-    /* GAME GRID */
+    /* GRID */
     .grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
       gap:15px;
       padding:20px;
       flex:1;
     }
 
+    /* CARD */
     .card{
       background:#1f2937;
-      padding:20px;
       border-radius:15px;
-      text-align:center;
+      overflow:hidden;
       cursor:pointer;
       transition:0.3s;
       box-shadow:0 5px 15px rgba(0,0,0,0.3);
+      text-align:center;
     }
 
     .card:hover{
@@ -100,23 +100,26 @@
       color:black;
     }
 
-    .emoji{
-      font-size:30px;
-      margin-bottom:10px;
+    /* THUMBNAIL PERFECT FIT */
+    .thumb{
+      width:100%;
+      height:140px;
+      object-fit:cover;
+      display:block;
     }
 
     .title{
+      padding:10px;
       font-size:14px;
       font-weight:bold;
     }
 
-    /* FOOTER FIXED BOTTOM */
+    /* FOOTER */
     footer{
       text-align:center;
       padding:15px;
       background:#111827;
       font-size:12px;
-      opacity:0.9;
       margin-top:auto;
     }
 
@@ -144,30 +147,30 @@
 <!-- HERO -->
 <div class="hero">
   <h1>Play Free Online Games</h1>
-  <p>Enjoy smooth browser games anytime without download. Fun Zone brings fast and fun gaming experience.</p>
+  <p>Enjoy smooth browser games instantly without download. Fun Zone brings fun and fast gaming experience.</p>
 </div>
 
 <!-- GAMES -->
 <div class="grid">
 
   <div class="card" onclick="openGame('snake.html')">
-    <div class="emoji">🐍</div>
-    <div class="title">Snake Game</div>
+    <img src="snake.jpg" class="thumb">
+    <div class="title">🐍 Snake Game</div>
   </div>
 
   <div class="card" onclick="openGame('tictactoe.html')">
-    <div class="emoji">❌⭕</div>
-    <div class="title">Tic Tac Toe</div>
+    <img src="tictactoe.jpg" class="thumb">
+    <div class="title">❌⭕ Tic Tac Toe</div>
   </div>
 
   <div class="card" onclick="openGame('ludo.html')">
-    <div class="emoji">🎲</div>
-    <div class="title">Ludo Lite</div>
+    <img src="ludo.jpg" class="thumb">
+    <div class="title">🎲 Ludo Lite</div>
   </div>
 
 </div>
 
-<!-- FOOTER (BOTTOM FIXED) -->
+<!-- FOOTER -->
 <footer>
   © 2026 Fun Zone |
   <a href="about.html">About</a>
