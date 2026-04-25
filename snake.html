@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin:0;
+      font-family:Arial;
+      background:#0f172a;
+      color:white;
+      text-align:center;
+    }
+
+    /* LOADING */
+    #loading {
+      position:fixed;
+      width:100%;
+      height:100%;
+      background:#020617;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      z-index:999;
+    }
+
+    canvas {
+      background:#020617;
+      margin-top:20px;
+      border-radius:10px;
+    }
+
+    .score {
+      margin-top:10px;
+      font-size:18px;
+    }
+
+    button {
+      margin-top:15px;
+      padding:10px 20px;
+      border:none;
+      background:#22c55e;
+      color:white;
+      border-radius:5px;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    .controls {
+      margin-top:20px;
+    }
+
+    .controls button {
+      width:60px;
+      height:60px;
+      margin:5px;
+      font-size:20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading">Loading Game...</div>
+
+<h1>🐍 Snake Game</h1>
+<div class="score">Score: <span id="score">0</span></div>
+
+<canvas id="game" width="300" height="300"></canvas>
+
+<br>
+<button onclick="startGame()">Restart</button>
+
+<div class="controls">
+  <br>
+  <button onclick="setDir('up')">⬆️</button><br>
+  <button onclick="setDir('left')">⬅️</button>
+  <button onclick="setDir('down')">⬇️</button>
+  <button onclick="setDir('right')">➡️</button>
+</div>
+
+<script>
+let canvas = document.getElementById("game");
+let ctx = canvas.getContext("2d");
+
+const box = 15;
+let snake, food, direction, score, game;
+
+// START GAME
+function startGame(){
+  snake = [{x:150, y:150}];
+  direction = "RIGHT";
+  score = 0;
+
+  food = randomFood();
+
+  document.getElementById("score").innerText = score;
+
+  clearInterval(game);
+  game = setInterval(draw, 110);
+}
+
+// RANDOM FOOD (SAFE)
+function randomFood(){
+  return {
+    x: Math.floor(Math.random()*20)*box,
+    y: Math.floor(Math.random()*20)*box
+  };
+}
+
+// DRAW LOOP
+function draw(){
+  ctx.fillStyle = "#020617";
+  ctx.fillRect(0,0,300,300);
+
+  // snake
+  for(let i=0;i<snake.length;i++){
+    ctx.fillStyle = i===0 ? "#22c55e" : "#4ade80";
+    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+  }
+
+  // food
+  ctx.fillStyle = "red";
+  ctx.fillRect(food.x, food.y, box, box);
+
+  let headX = snake[0].x;
+  let headY = snake[0].y;
+
+  if(direction==="LEFT") headX -= box;
+  if(direction==="RIGHT") headX += box;
+  if(direction==="UP") headY -= box;
+  if(direction==="DOWN") headY += box;
+
+  // collision check BEFORE adding head
+  if(
+    headX < 0 || headY < 0 ||
+    headX >= 300 || headY >= 300 ||
+    selfCollision(headX, headY)
+  ){
+    clearInterval(game);
+    setTimeout(() => {
+      alert("Game Over! Score: " + score);
+    }, 50);
+    return;
+  }
+
+  // eat
+  if(headX === food.x && headY === food.y){
+    score++;
+    document.getElementById("score").innerText = score;
+    food = randomFood();
+  } else {
+    snake.pop();
+  }
+
+  snake.unshift({x:headX, y:headY});
+}
+
+// SELF COLLISION SAFE
+function selfCollision(x,y){
+  for(let i=0;i<snake.length;i++){
+    if(snake[i].x === x && snake[i].y === y){
+      return true;
+    }
+  }
+  return false;
+}
+
+// KEYBOARD CONTROL (NO REVERSE BUG)
+document.addEventListener("keydown", e => {
+  if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT";
+  if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP";
+  if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";
+  if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN";
+});
+
+// MOBILE CONTROL
+function setDir(dir){
+  if(dir==="left" && direction!=="RIGHT") direction="LEFT";
+  if(dir==="up" && direction!=="DOWN") direction="UP";
+  if(dir==="right" && direction!=="LEFT") direction="RIGHT";
+  if(dir==="down" && direction!=="UP") direction="DOWN";
+}
+
+// FAKE LOADING (SMOOTH ENTRY)
+window.onload = () => {
+  setTimeout(() => {
+    document.getElementById("loading").style.display = "none";
+    startGame();
+  }, 1000);
+};
+</script>
+
+</body>
+</html>
