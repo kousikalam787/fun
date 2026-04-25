@@ -1,73 +1,104 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fun Zone Login</title>
+  <title>Login - Fun Zone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
-      background:#0f172a;
-      color:white;
-      font-family:Arial;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
       margin:0;
+      font-family:Arial;
+      color:white;
+      overflow:hidden;
     }
 
+    /* 🎥 VIDEO BACKGROUND */
+    video {
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:-1;
+    }
+
+    /* DARK OVERLAY */
+    .overlay {
+      position:fixed;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.6);
+      top:0;
+      left:0;
+    }
+
+    /* LOGIN BOX */
     .box {
-      background:#1e293b;
-      padding:20px;
-      border-radius:10px;
-      width:300px;
-      max-width:90%;
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      background:rgba(0,0,0,0.7);
+      padding:25px;
+      border-radius:15px;
+      width:90%;
+      max-width:300px;
+      text-align:center;
     }
 
     input {
       width:100%;
-      margin:8px 0;
       padding:10px;
+      margin:10px 0;
       border:none;
       border-radius:5px;
+      outline:none;
     }
 
     button {
       width:100%;
       padding:10px;
-      margin-top:10px;
       background:#22c55e;
       border:none;
       color:white;
+      border-radius:5px;
       cursor:pointer;
+      font-size:16px;
     }
 
-    #msg {
+    .toggle {
       margin-top:10px;
-      color:red;
-      text-align:center;
+      cursor:pointer;
+      font-size:14px;
+      color:#22c55e;
     }
   </style>
 </head>
 
 <body>
 
+<!-- VIDEO -->
+<video autoplay muted loop>
+  <source src="bg.mp4" type="video/mp4">
+</video>
+
+<div class="overlay"></div>
+
+<!-- LOGIN BOX -->
 <div class="box">
-  <h2>🎮 Fun Zone</h2>
+  <h2 id="title">Login</h2>
 
-  <input id="name" placeholder="Your Name">
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
 
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
+  <button onclick="submit()">Login</button>
 
-  <p id="msg"></p>
+  <div class="toggle" onclick="toggleMode()">Don't have account? Register</div>
 </div>
 
-<!-- 🔥 FIREBASE SCRIPT (NO MODULE ISSUE) -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 <script>
@@ -75,66 +106,63 @@ const firebaseConfig = {
   apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
   authDomain: "kousik-game.firebaseapp.com",
   databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kousik-game",
-  storageBucket: "kousik-game.firebasestorage.app",
-  messagingSenderId: "403996094819",
-  appId: "1:403996094819:web:0f6e9cf855a9c4b09d2356"
+  projectId: "kousik-game"
 };
 
 firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-function msg(t){
-  document.getElementById("msg").innerText = t;
+let isLogin = true;
+
+// TOGGLE LOGIN / REGISTER
+function toggleMode(){
+  isLogin = !isLogin;
+
+  document.getElementById("title").innerText = isLogin ? "Login" : "Register";
+  document.querySelector("button").innerText = isLogin ? "Login" : "Register";
+  document.querySelector(".toggle").innerText =
+    isLogin ? "Don't have account? Register" : "Already have account? Login";
 }
 
-// REGISTER
-function register() {
-  let name = document.getElementById("name").value.trim();
-  let username = document.getElementById("username").value.trim();
-  let password = document.getElementById("password").value.trim();
+// SUBMIT
+function submit(){
+  let user = document.getElementById("username").value.trim();
+  let pass = document.getElementById("password").value.trim();
 
-  if (!name || !username || !password) {
-    return msg("All fields required");
+  if(!user || !pass){
+    alert("Fill all fields");
+    return;
   }
 
-  let email = username + "@gmail.com";
+  let ref = db.ref("users/" + user);
 
-  firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then(() => {
-      firebase.database().ref("users/" + username).set({
-        name: name,
-        username: username
-      });
-
-      localStorage.setItem("user", username);
-      window.location.href = "home.html";
-    })
-    .catch(e => {
-      msg(e.message);
-      console.log(e);
+  if(isLogin){
+    // LOGIN
+    ref.once("value").then(snap=>{
+      if(!snap.exists()){
+        alert("User not found");
+      } else if(snap.val().password !== pass){
+        alert("Wrong password");
+      } else {
+        localStorage.setItem("user", user);
+        window.location.href = "home.html";
+      }
     });
-}
-
-// LOGIN
-function login() {
-  let username = document.getElementById("username").value.trim();
-  let password = document.getElementById("password").value.trim();
-
-  if (!username || !password) {
-    return msg("Enter username & password");
+  } else {
+    // REGISTER
+    ref.once("value").then(snap=>{
+      if(snap.exists()){
+        alert("Username already taken");
+      } else {
+        ref.set({
+          password: pass,
+          name: user
+        });
+        alert("Registered! Now login");
+        toggleMode();
+      }
+    });
   }
-
-  let email = username + "@gmail.com";
-
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(() => {
-      localStorage.setItem("user", username);
-      window.location.href = "home.html";
-    })
-    .catch(e => {
-      msg("Invalid username or password");
-      console.log(e);
-    });
 }
 </script>
 
