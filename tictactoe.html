@@ -74,8 +74,8 @@
     }
 
     .popup-box button {
-      margin-top:10px;
       width:100%;
+      margin-top:10px;
     }
   </style>
 </head>
@@ -105,7 +105,7 @@
 <!-- POPUP -->
 <div id="popup">
   <div class="popup-box">
-    <h2 id="winText">Winner</h2>
+    <h2 id="winText">Result</h2>
     <button onclick="rematch()">🔁 Rematch</button>
     <button onclick="restartGame()">🔄 Restart Room</button>
   </div>
@@ -123,16 +123,20 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+/* AUDIO */
+let winSound = new Audio("win.mp3");
+let tapSound = new Audio("tap.mp3");
+
+/* STATE */
 let username = localStorage.getItem("user") || "Guest";
 let room = null;
 let player = null;
+let gameEnded = false;
 
 let gameRef = null;
 let chatRef = null;
 
-let gameEnded = false;
-
-/* ================= CREATE ROOM ================= */
+/* CREATE ROOM */
 function createRoom(){
   room = Math.random().toString(36).substr(2,5);
   player = "X";
@@ -150,23 +154,20 @@ function createRoom(){
   });
 
   document.getElementById("roomId").value = room;
-  document.getElementById("status").innerText =
-    "Room Created. You are X";
+  document.getElementById("status").innerText = "Room Created (X)";
 
   startListeners();
 }
 
-/* ================= JOIN ROOM ================= */
+/* JOIN ROOM */
 function joinRoom(){
   room = document.getElementById("roomId").value.trim();
   if(!room) return alert("Enter room code");
 
-  let pass = prompt("Enter Room Password:");
+  let pass = prompt("Enter Password:");
   player = "O";
 
-  let ref = db.ref("rooms/"+room);
-
-  ref.once("value").then(snap=>{
+  db.ref("rooms/"+room).once("value").then(snap=>{
     if(!snap.exists()){
       alert("Room not found ❌");
       return;
@@ -184,18 +185,17 @@ function joinRoom(){
       return;
     }
 
-    ref.child("players").update({
+    db.ref("rooms/"+room+"/players").update({
       O: username
     });
 
-    document.getElementById("status").innerText =
-      "Joined Room. You are O";
+    document.getElementById("status").innerText = "Joined Room (O)";
 
     startListeners();
   });
 }
 
-/* ================= LISTENERS ================= */
+/* LISTENERS */
 function startListeners(){
 
   if(gameRef) gameRef.off();
@@ -213,11 +213,25 @@ function startListeners(){
     document.getElementById("turn").innerText =
       "Turn: " + (data.players[data.turn] || "Waiting") + " ("+data.turn+")";
 
-    if(checkWin(data.board) && !gameEnded){
+    let win = checkWin(data.board);
+    let draw = data.board.every(x => x !== "");
+
+    if((win || draw) && !gameEnded){
       gameEnded = true;
 
-      let winner = data.players[data.turn === "X" ? "O" : "X"];
-      showPopup(winner);
+      winSound.currentTime = 0;
+      winSound.play();
+
+      let msg;
+
+      if(win){
+        let winner = data.players[data.turn === "X" ? "O" : "X"];
+        msg = "🏆 Winner: " + winner;
+      } else {
+        msg = "🤝 Game Draw!";
+      }
+
+      showPopup(msg);
     }
   });
 
@@ -230,7 +244,7 @@ function startListeners(){
   });
 }
 
-/* ================= BOARD ================= */
+/* BOARD */
 function drawBoard(board){
   let div = document.getElementById("board");
   div.innerHTML="";
@@ -244,9 +258,12 @@ function drawBoard(board){
   });
 }
 
-/* ================= MOVE ================= */
+/* MOVE */
 function move(i){
   if(gameEnded) return;
+
+  tapSound.currentTime = 0;
+  tapSound.play();
 
   let ref = db.ref("rooms/"+room);
 
@@ -266,7 +283,7 @@ function move(i){
   });
 }
 
-/* ================= WIN CHECK ================= */
+/* WIN CHECK */
 function checkWin(b=[]){
   let p = [
     [0,1,2],[3,4,5],[6,7,8],
@@ -276,15 +293,13 @@ function checkWin(b=[]){
   return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
 }
 
-/* ================= POPUP ================= */
-function showPopup(winner){
-  document.getElementById("winText").innerText =
-    "🏆 Winner: " + winner;
-
+/* POPUP */
+function showPopup(text){
+  document.getElementById("winText").innerText = text;
   document.getElementById("popup").style.display = "flex";
 }
 
-/* ================= REMATCH ================= */
+/* REMATCH */
 function rematch(){
   gameEnded = false;
 
@@ -293,15 +308,15 @@ function rematch(){
     turn:"X"
   });
 
-  document.getElementById("popup").style.display = "none";
+  document.getElementById("popup").style.display="none";
 }
 
-/* ================= RESTART ================= */
+/* RESTART */
 function restartGame(){
   location.reload();
 }
 
-/* ================= CHAT ================= */
+/* CHAT */
 function sendMsg(){
   if(!room) return;
 
