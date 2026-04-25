@@ -12,7 +12,6 @@
       overflow:hidden;
     }
 
-    /* 🎥 VIDEO BACKGROUND */
     video {
       position:fixed;
       top:0;
@@ -23,7 +22,6 @@
       z-index:-1;
     }
 
-    /* DARK OVERLAY */
     .overlay {
       position:fixed;
       width:100%;
@@ -33,17 +31,16 @@
       left:0;
     }
 
-    /* LOGIN BOX */
     .box {
       position:absolute;
       top:50%;
       left:50%;
       transform:translate(-50%, -50%);
-      background:rgba(0,0,0,0.7);
+      background:rgba(0,0,0,0.75);
       padding:25px;
       border-radius:15px;
       width:90%;
-      max-width:300px;
+      max-width:320px;
       text-align:center;
     }
 
@@ -85,7 +82,7 @@
 
 <div class="overlay"></div>
 
-<!-- LOGIN BOX -->
+<!-- BOX -->
 <div class="box">
   <h2 id="title">Login</h2>
 
@@ -104,9 +101,7 @@
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
-  authDomain: "kousik-game.firebaseapp.com",
-  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kousik-game"
+  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -114,7 +109,7 @@ const db = firebase.database();
 
 let isLogin = true;
 
-// TOGGLE LOGIN / REGISTER
+// TOGGLE
 function toggleMode(){
   isLogin = !isLogin;
 
@@ -124,10 +119,12 @@ function toggleMode(){
     isLogin ? "Don't have account? Register" : "Already have account? Login";
 }
 
-// SUBMIT
+// MAIN FUNCTION
 function submit(){
   let user = document.getElementById("username").value.trim();
   let pass = document.getElementById("password").value.trim();
+
+  console.log("Trying:", user);
 
   if(!user || !pass){
     alert("Fill all fields");
@@ -138,29 +135,57 @@ function submit(){
 
   if(isLogin){
     // LOGIN
-    ref.once("value").then(snap=>{
-      if(!snap.exists()){
+    ref.get()
+    .then(snapshot => {
+      console.log("Data:", snapshot.val());
+
+      if(!snapshot.exists()){
         alert("User not found");
-      } else if(snap.val().password !== pass){
-        alert("Wrong password");
-      } else {
-        localStorage.setItem("user", user);
-        window.location.href = "home.html";
+        return;
       }
+
+      let data = snapshot.val();
+
+      if(!data.password){
+        alert("Data corrupted");
+        return;
+      }
+
+      if(data.password !== pass){
+        alert("Wrong password");
+        return;
+      }
+
+      // SUCCESS
+      localStorage.setItem("user", user);
+      alert("Login success ✅");
+      window.location.href = "home.html";
+    })
+    .catch(error => {
+      console.error(error);
+      alert("Firebase error (check console)");
     });
+
   } else {
     // REGISTER
-    ref.once("value").then(snap=>{
-      if(snap.exists()){
+    ref.get().then(snapshot => {
+      if(snapshot.exists()){
         alert("Username already taken");
-      } else {
-        ref.set({
-          password: pass,
-          name: user
-        });
-        alert("Registered! Now login");
-        toggleMode();
+        return;
       }
+
+      ref.set({
+        password: pass,
+        name: user
+      })
+      .then(() => {
+        alert("Registered successfully ✅");
+        toggleMode();
+      })
+      .catch(err=>{
+        console.error(err);
+        alert("Register error");
+      });
     });
   }
 }
