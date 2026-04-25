@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fun Zone</title>
+  <title>Fun Zone - Game Hub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -13,7 +13,6 @@
       background-size: cover;
     }
 
-    /* DARK OVERLAY */
     body::after {
       content:"";
       position:fixed;
@@ -23,14 +22,14 @@
       z-index:-1;
     }
 
-    /* 🔝 NAVBAR */
+    /* NAVBAR */
     nav {
       display:flex;
       justify-content:space-between;
       align-items:center;
       background:rgba(0,0,0,0.7);
       padding:10px 15px;
-      flex-wrap:nowrap;
+      flex-wrap:wrap;
     }
 
     .nav-links {
@@ -50,16 +49,16 @@
       color:#22c55e;
     }
 
-    /* 👤 PROFILE */
     .profile {
+      display:flex;
+      align-items:center;
+      gap:10px;
       margin-left:auto;
-      position:relative;
-      cursor:pointer;
     }
 
     .avatar {
-      width:40px;
-      height:40px;
+      width:35px;
+      height:35px;
       border-radius:50%;
       background:#22c55e;
       display:flex;
@@ -68,63 +67,48 @@
       font-weight:bold;
     }
 
-    .dropdown {
-      position:absolute;
-      top:50px;
-      right:0;
-      background:#1e293b;
-      padding:15px;
-      border-radius:10px;
-      display:none;
-      min-width:150px;
-    }
-
-    .dropdown p {
-      margin:0 0 10px 0;
-    }
-
-    .dropdown button {
-      width:100%;
-      padding:8px;
-      border:none;
-      background:red;
-      color:white;
-      border-radius:5px;
-      cursor:pointer;
-    }
-
     /* MAIN */
     .main {
       padding:20px;
     }
 
-    .card {
+    h2 {
+      margin-bottom:15px;
+    }
+
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+      gap:15px;
+    }
+
+    .game-card {
       background:rgba(30,41,59,0.85);
       padding:20px;
-      margin:15px 0;
       border-radius:15px;
+      text-align:center;
       cursor:pointer;
       transition:0.3s;
+      font-size:16px;
     }
 
-    .card:hover {
+    .game-card:hover {
       transform:scale(1.05);
       background:#22c55e;
+      color:black;
     }
 
-    /* 📱 MOBILE FIX */
-    @media(max-width:768px){
-      nav {
-        flex-direction:column;
-        align-items:flex-start;
-      }
-
-      .profile {
-        align-self:flex-end;
-        margin-top:10px;
-      }
+    .emoji {
+      font-size:30px;
+      margin-bottom:10px;
+      display:block;
     }
 
+    @media(max-width:600px){
+      .grid {
+        grid-template-columns:repeat(2, 1fr);
+      }
+    }
   </style>
 </head>
 
@@ -140,86 +124,43 @@
     <a href="privacy.html">Policy</a>
   </div>
 
-  <div class="profile" onclick="toggleMenu()">
+  <div class="profile">
     <div class="avatar" id="avatar">U</div>
-
-    <div class="dropdown" id="menu">
-      <p id="name">User</p>
-      <button onclick="logout()">Logout</button>
-    </div>
+    <span id="name">User</span>
   </div>
 </nav>
 
 <!-- MAIN -->
 <div class="main">
-  <h2>Welcome to Fun Zone 🎮</h2>
+  <h2>Choose Your Game 🎯</h2>
 
-  <div class="card" onclick="openGame('snake.html')">🐍 Snake Game</div>
-  <div class="card">❌ Tic Tac Toe</div>
+  <div class="grid">
+
+    <div class="game-card" onclick="openGame('snake.html')">
+      <span class="emoji">🐍</span>
+      Snake Game
+    </div>
+
+    <div class="game-card" onclick="openGame('tictactoe.html')">
+      <span class="emoji">❌⭕</span>
+      Tic Tac Toe Online
+    </div>
+
+  </div>
 </div>
 
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
-  authDomain: "kousik-game.firebaseapp.com",
-  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kousik-game",
-  storageBucket: "kousik-game.firebasestorage.app",
-  messagingSenderId: "403996094819",
-  appId: "1:403996094819:web:0f6e9cf855a9c4b09d2356"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-// LOGIN CHECK
 let username = localStorage.getItem("user");
 
-if (!username) {
+if(!username){
   window.location.href = "index.html";
 }
 
-// AVATAR LETTER
+document.getElementById("name").innerText = username;
 document.getElementById("avatar").innerText = username.charAt(0).toUpperCase();
 
-// LOAD NAME
-firebase.database().ref("users/" + username).once("value")
-.then(snapshot => {
-  if (snapshot.exists()) {
-    document.getElementById("name").innerText = snapshot.val().name;
-  } else {
-    document.getElementById("name").innerText = username;
-  }
-});
-
-// MENU TOGGLE
-function toggleMenu() {
-  let menu = document.getElementById("menu");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
-}
-
-// LOGOUT
-function logout() {
-  firebase.auth().signOut().then(() => {
-    localStorage.removeItem("user");
-    window.location.href = "index.html";
-  });
-}
-
-// CLOSE MENU
-window.onclick = function(e) {
-  if (!e.target.closest(".profile")) {
-    document.getElementById("menu").style.display = "none";
-  }
-};
-
-// GAME OPEN
-function openGame(game){
-  window.location.href = game;
+function openGame(page){
+  window.location.href = page;
 }
 </script>
 
