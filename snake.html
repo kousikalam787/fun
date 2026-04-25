@@ -5,39 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body {
+    body{
       margin:0;
       font-family:Arial;
-      background:#0f172a;
       color:white;
       text-align:center;
+
+      /* 🌄 BACKGROUND */
+      background:url('bgn.jpg') no-repeat center center fixed;
+      background-size:cover;
     }
 
-    canvas {
-      background:#020617;
-      margin-top:20px;
-      border-radius:10px;
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+      z-index:-1;
     }
 
-    .score {
+    h1{ margin-top:10px; }
+
+    canvas{
+      margin-top:15px;
+      border-radius:12px;
+
+      /* 🟫 BOX IMAGE FIT FIX */
+      background:url('box.jpg') center/cover no-repeat;
+      box-shadow:0 10px 25px rgba(0,0,0,0.6);
+    }
+
+    .score{
       margin-top:10px;
+      font-size:18px;
     }
 
-    button {
+    button{
       margin-top:10px;
-      padding:10px 20px;
+      padding:10px 18px;
       border:none;
       background:#22c55e;
       color:white;
-      border-radius:5px;
+      border-radius:6px;
       cursor:pointer;
     }
 
-    /* START SCREEN */
+    /* 🎮 START SCREEN */
     #startScreen{
       position:fixed;
-      top:0;left:0;
-      width:100%;height:100%;
+      inset:0;
       background:rgba(0,0,0,0.92);
       display:flex;
       flex-direction:column;
@@ -46,7 +62,7 @@
       z-index:9999;
     }
 
-    .diff-btns button{
+    .diff button{
       margin:8px;
       width:120px;
     }
@@ -56,20 +72,65 @@
     }
 
     /* GAME OVER */
-    #gameOver {
+    #gameOver{
       display:none;
       position:fixed;
-      top:0;left:0;
-      width:100%;height:100%;
+      inset:0;
       background:rgba(0,0,0,0.9);
       align-items:center;
       justify-content:center;
       flex-direction:column;
-      z-index:1000;
+      z-index:9998;
+    }
+
+    /* 🎯 LOADING */
+    #loadingScreen{
+      position:fixed;
+      inset:0;
+      background:url('bgk.jpg') center/cover no-repeat;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:100000;
+    }
+
+    #loadingScreen::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+    }
+
+    .box{
+      position:relative;
+      z-index:1;
+      width:80%;
+      max-width:300px;
+      text-align:center;
+    }
+
+    .bar{
+      width:100%;
+      height:12px;
+      background:#1e293b;
+      border-radius:20px;
+      overflow:hidden;
+      margin-top:12px;
+    }
+
+    #barFill{
+      width:0%;
+      height:100%;
+      background:#22c55e;
+      transition:0.2s;
+    }
+
+    #percent{
+      margin-top:10px;
     }
 
     /* CONTROLS */
-    .controls button {
+    .controls button{
       width:60px;
       height:60px;
       margin:5px;
@@ -79,13 +140,24 @@
       color:white;
     }
 
-    .controls button:active {
+    .controls button:active{
       background:#22c55e;
     }
   </style>
 </head>
 
 <body>
+
+<!-- 🚀 LOADING -->
+<div id="loadingScreen">
+  <div class="box">
+    <h2>🐍 Loading Game...</h2>
+    <div class="bar">
+      <div id="barFill"></div>
+    </div>
+    <div id="percent">0%</div>
+  </div>
+</div>
 
 <h1>🐍 Snake Game PRO</h1>
 <div class="score">Score: <span id="score">0</span></div>
@@ -95,161 +167,160 @@
 <br>
 <button onclick="restart()">Restart</button>
 
-<!-- START SCREEN -->
+<!-- START -->
 <div id="startScreen">
-  <h1>🐍 Snake Game</h1>
+  <h2>🐍 Snake Game</h2>
   <p>Select Difficulty</p>
 
-  <div class="diff-btns">
-    <button onclick="setDifficulty('easy',this)">Easy</button>
-    <button onclick="setDifficulty('medium',this)">Medium</button>
-    <button onclick="setDifficulty('hard',this)">Hard</button>
+  <div class="diff">
+    <button onclick="setDiff('easy',this)">Easy</button>
+    <button onclick="setDiff('medium',this)">Medium</button>
+    <button onclick="setDiff('hard',this)">Hard</button>
   </div>
 
-  <button onclick="begin()" style="margin-top:20px;">PLAY GAME</button>
+  <button onclick="start()">PLAY</button>
 </div>
 
 <!-- GAME OVER -->
 <div id="gameOver">
   <h2>Game Over 💀</h2>
-  <p>Your Score: <span id="finalScore"></span></p>
+  <p>Score: <span id="final"></span></p>
   <button onclick="restart()">Play Again</button>
 </div>
 
 <!-- CONTROLS -->
 <div class="controls">
-  <button onclick="setDir('up')">⬆️</button><br>
-  <button onclick="setDir('left')">⬅️</button>
-  <button onclick="setDir('down')">⬇️</button>
-  <button onclick="setDir('right')">➡️</button>
+  <button onclick="dir('up')">⬆️</button><br>
+  <button onclick="dir('left')">⬅️</button>
+  <button onclick="dir('down')">⬇️</button>
+  <button onclick="dir('right')">➡️</button>
 </div>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
 
-const box = 15;
+/* 🔥 LOADING 0-100 */
+let load=0;
+let loadInt=setInterval(()=>{
+  load++;
+  document.getElementById("barFill").style.width=load+"%";
+  document.getElementById("percent").innerText=load+"%";
 
-let snake = [];
-let food = {};
-let direction = "RIGHT";
-let score = 0;
-let gameInterval = null;
+  if(load>=100){
+    clearInterval(loadInt);
+    setTimeout(()=>{
+      document.getElementById("loadingScreen").style.display="none";
+    },300);
+  }
+},15);
 
-let speed = 110;
-let started = false;
+/* GAME */
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
 
-/* DIFFICULTY */
-function setDifficulty(level, btn){
+let box=15;
+let snake=[];
+let food;
+let d="RIGHT";
+let score=0;
+let speed=110;
+let game;
 
-  document.querySelectorAll(".diff-btns button")
-    .forEach(b=>b.classList.remove("selected"));
+/* DIFF */
+function setDiff(l,b){
+  document.querySelectorAll(".diff button").forEach(x=>x.classList.remove("selected"));
+  b.classList.add("selected");
 
-  btn.classList.add("selected");
-
-  if(level==="easy") speed = 150;
-  if(level==="medium") speed = 110;
-  if(level==="hard") speed = 70;
+  if(l==="easy") speed=150;
+  if(l==="medium") speed=110;
+  if(l==="hard") speed=70;
 }
 
-/* START GAME */
-function begin(){
+/* START */
+function start(){
   document.getElementById("startScreen").style.display="none";
-  startGame();
-  started = true;
+  init();
 }
 
 /* INIT */
-function startGame(){
+function init(){
+  clearInterval(game);
 
-  clearInterval(gameInterval); // IMPORTANT FIX
+  snake=[{x:150,y:150}];
+  d="RIGHT";
+  score=0;
+  food=random();
 
-  snake = [{x:150,y:150}];
-  direction = "RIGHT";
-  score = 0;
+  document.getElementById("score").innerText=0;
+  document.getElementById("gameOver").style.display="none";
 
-  food = randomFood();
-
-  document.getElementById("score").innerText = score;
-  document.getElementById("gameOver").style.display = "none";
-
-  gameInterval = setInterval(draw, speed);
+  game=setInterval(draw,speed);
 }
 
-function randomFood(){
-  return {
-    x: Math.floor(Math.random()*20)*box,
-    y: Math.floor(Math.random()*20)*box
+function random(){
+  return{
+    x:Math.floor(Math.random()*20)*box,
+    y:Math.floor(Math.random()*20)*box
   };
 }
 
-/* GAME LOOP */
+/* DRAW */
 function draw(){
+  ctx.clearRect(0,0,300,300);
 
-  ctx.fillStyle="#020617";
-  ctx.fillRect(0,0,300,300);
-
-  for(let i=0;i<snake.length;i++){
-    ctx.fillStyle = i===0 ? "#22c55e" : "#4ade80";
-    ctx.fillRect(snake[i].x,snake[i].y,box,box);
-  }
+  snake.forEach((s,i)=>{
+    ctx.fillStyle=i? "#4ade80":"#22c55e";
+    ctx.fillRect(s.x,s.y,box,box);
+  });
 
   ctx.fillStyle="red";
   ctx.fillRect(food.x,food.y,box,box);
 
-  let headX = snake[0].x;
-  let headY = snake[0].y;
+  let x=snake[0].x;
+  let y=snake[0].y;
 
-  if(direction==="LEFT") headX-=box;
-  if(direction==="RIGHT") headX+=box;
-  if(direction==="UP") headY-=box;
-  if(direction==="DOWN") headY+=box;
+  if(d==="LEFT")x-=box;
+  if(d==="RIGHT")x+=box;
+  if(d==="UP")y-=box;
+  if(d==="DOWN")y+=box;
 
-  if(
-    headX<0 || headY<0 ||
-    headX>=300 || headY>=300 ||
-    selfCollision(headX,headY)
-  ){
-    gameOver();
+  if(x<0||y<0||x>=300||y>=300||self(x,y)){
+    over();
     return;
   }
 
-  if(headX===food.x && headY===food.y){
+  if(x===food.x&&y===food.y){
     score++;
-    document.getElementById("score").innerText = score;
-    food = randomFood();
-  } else {
-    snake.pop();
-  }
+    document.getElementById("score").innerText=score;
+    food=random();
+  }else snake.pop();
 
-  snake.unshift({x:headX,y:headY});
+  snake.unshift({x,y});
 }
 
-/* COLLISION */
-function selfCollision(x,y){
-  return snake.some(s=>s.x===x && s.y===y);
+function self(x,y){
+  return snake.some(s=>s.x===x&&s.y===y);
 }
 
-/* CONTROLS */
-function setDir(dir){
-  if(dir==="left" && direction!=="RIGHT") direction="LEFT";
-  if(dir==="up" && direction!=="DOWN") direction="UP";
-  if(dir==="right" && direction!=="LEFT") direction="RIGHT";
-  if(dir==="down" && direction!=="UP") direction="DOWN";
+/* CONTROL */
+function dir(x){
+  if(x==="left"&&d!=="RIGHT")d="LEFT";
+  if(x==="right"&&d!=="LEFT")d="RIGHT";
+  if(x==="up"&&d!=="DOWN")d="UP";
+  if(x==="down"&&d!=="UP")d="DOWN";
 }
 
 /* GAME OVER */
-function gameOver(){
-  clearInterval(gameInterval);
-
-  document.getElementById("finalScore").innerText = score;
-  document.getElementById("gameOver").style.display = "flex";
+function over(){
+  clearInterval(game);
+  document.getElementById("final").innerText=score;
+  document.getElementById("gameOver").style.display="flex";
 }
 
 /* RESTART */
 function restart(){
-  startGame();
+  init();
 }
+
 </script>
 
 </body>
