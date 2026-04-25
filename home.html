@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fun Zone - Game Hub</title>
+  <title>Fun Zone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body {
+    body{
       margin:0;
       font-family:Arial;
       color:white;
-      background: url('bg.jpg') no-repeat center center fixed;
-      background-size: cover;
+      background:url('bg.jpg') no-repeat center center fixed;
+      background-size:cover;
     }
 
-    body::after {
+    body::after{
       content:"";
       position:fixed;
       width:100%;
@@ -22,145 +22,75 @@
       z-index:-1;
     }
 
-    /* NAVBAR */
-    nav {
+    nav{
       display:flex;
       justify-content:space-between;
       align-items:center;
       background:rgba(0,0,0,0.7);
-      padding:10px 15px;
+      padding:10px;
       flex-wrap:wrap;
     }
 
-    .nav-links {
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .nav-links a {
+    .nav-links a{
       color:white;
       text-decoration:none;
-      font-size:14px;
+      margin:5px;
       font-weight:bold;
     }
 
-    .nav-links a:hover {
-      color:#22c55e;
-    }
-
-    .profile {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-left:auto;
-    }
-
-    .avatar {
-      width:35px;
-      height:35px;
-      border-radius:50%;
-      background:#22c55e;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:bold;
-    }
-
-    /* MAIN */
-    .main {
+    .main{
       padding:20px;
     }
 
-    h2 {
-      margin-bottom:15px;
-    }
-
-    .grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
-      gap:15px;
-    }
-
-    .game-card {
+    .card{
       background:rgba(30,41,59,0.85);
       padding:20px;
+      margin:15px 0;
       border-radius:15px;
-      text-align:center;
       cursor:pointer;
       transition:0.3s;
-      font-size:16px;
     }
 
-    .game-card:hover {
+    .card:hover{
       transform:scale(1.05);
       background:#22c55e;
-      color:black;
-    }
-
-    .emoji {
-      font-size:30px;
-      margin-bottom:10px;
-      display:block;
-    }
-
-    @media(max-width:600px){
-      .grid {
-        grid-template-columns:repeat(2, 1fr);
-      }
     }
   </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <nav>
   <div class="nav-links">
-    <a href="home.html">Home</a>
-    <a href="games.html">Games</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-    <a href="privacy.html">Policy</a>
-  </div>
-
-  <div class="profile">
-    <div class="avatar" id="avatar">U</div>
-    <span id="name">User</span>
+    <a href="#">Home</a>
+    <a href="#">Games</a>
   </div>
 </nav>
 
-<!-- MAIN -->
 <div class="main">
-  <h2>Choose Your Game 🎯</h2>
 
-  <div class="grid">
+  <h2>🎮 Fun Zone Games</h2>
 
-    <div class="game-card" onclick="openGame('snake.html')">
-      <span class="emoji">🐍</span>
-      Snake Game
-    </div>
-
-    <div class="game-card" onclick="openGame('tictactoe.html')">
-      <span class="emoji">❌⭕</span>
-      Tic Tac Toe Online
-    </div>
-
+  <!-- SNAKE -->
+  <div class="card" onclick="openGame('snake.html')">
+    🐍 Snake Game
   </div>
+
+  <!-- TIC TAC TOE -->
+  <div class="card" onclick="openGame('tictactoe.html')">
+    ❌⭕ Tic Tac Toe Online
+  </div>
+
+  <!-- LUDO LITE -->
+  <div class="card" onclick="openGame('ludo.html')">
+    🎲 Ludo Lite Online
+  </div>
+
 </div>
 
 <script>
-let username = localStorage.getItem("user");
-
-if(!username){
-  window.location.href = "index.html";
-}
-
-document.getElementById("name").innerText = username;
-document.getElementById("avatar").innerText = username.charAt(0).toUpperCase();
-
-function openGame(page){
-  window.location.href = page;
+function openGame(game){
+  window.location.href = game;
 }
 </script>
 
