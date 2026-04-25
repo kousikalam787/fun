@@ -2,8 +2,6 @@
 <html>
 <head>
   <title>Fun Zone</title>
-
-  <!-- 📱 MOBILE FIX -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -13,36 +11,28 @@
       color:white;
     }
 
-    /* 🎬 VIDEO BACKGROUND */
     #bgVideo {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -2;
-    }
-
-    /* DARK OVERLAY */
-    body::after {
-      content: "";
-      position: fixed;
-      top:0;
-      left:0;
       width:100%;
       height:100%;
-      background: rgba(0,0,0,0.6);
+      object-fit:cover;
+      z-index:-2;
+    }
+
+    body::after {
+      content:"";
+      position:fixed;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.6);
       z-index:-1;
     }
 
     .topbar {
-      background: rgba(2,6,23,0.8);
+      background:rgba(0,0,0,0.7);
       padding:15px;
-      font-size:20px;
-      font-weight:bold;
-      backdrop-filter: blur(10px);
       text-align:center;
+      font-size:20px;
     }
 
     .container {
@@ -51,20 +41,9 @@
 
     .sidebar {
       width:220px;
-      background: rgba(30,41,59,0.8);
+      background:rgba(30,41,59,0.8);
       padding:20px;
       height:100vh;
-      backdrop-filter: blur(10px);
-    }
-
-    .profile {
-      text-align:center;
-      margin-bottom:20px;
-    }
-
-    .profile img {
-      width:70px;
-      border-radius:50%;
     }
 
     .main {
@@ -73,44 +52,19 @@
     }
 
     .card {
-      background: rgba(30,41,59,0.8);
+      background:rgba(30,41,59,0.8);
       padding:20px;
       margin:10px 0;
       border-radius:10px;
-      backdrop-filter: blur(10px);
-      transition:0.3s;
-      cursor:pointer;
     }
 
-    .card:hover {
-      transform: scale(1.05);
-      background:#22c55e;
-    }
-
-    button {
-      margin-top:10px;
-      padding:10px;
-      width:100%;
-      background:red;
-      border:none;
-      color:white;
-      cursor:pointer;
-      border-radius:5px;
-    }
-
-    /* 📱 MOBILE RESPONSIVE */
-    @media (max-width: 768px) {
+    @media(max-width:768px){
       .container {
-        flex-direction: column;
+        flex-direction:column;
       }
-
       .sidebar {
         width:100%;
         height:auto;
-      }
-
-      .main {
-        padding:10px;
       }
     }
   </style>
@@ -118,34 +72,24 @@
 
 <body>
 
-<!-- 🎬 VIDEO -->
 <video autoplay muted loop id="bgVideo">
   <source src="assets/bg.mp4" type="video/mp4">
 </video>
 
-<!-- TOP BAR -->
 <div class="topbar">🎮 Fun Zone</div>
 
 <div class="container">
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="profile">
-      <img src="https://i.imgur.com/6VBx3io.png">
-      <h3 id="name">Loading...</h3>
-      <p>@<span id="username"></span></p>
-    </div>
-
+    <h3 id="name">Loading...</h3>
+    <p>@<span id="username"></span></p>
     <button onclick="logout()">Logout</button>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
     <h2>Games</h2>
-
-    <div class="card">🐍 Snake Game</div>
-    <div class="card">❌⭕ Tic Tac Toe</div>
-    <div class="card">🧠 Quiz Game</div>
+    <div class="card">Snake Game</div>
+    <div class="card">Tic Tac Toe</div>
   </div>
 
 </div>
@@ -164,24 +108,19 @@ import { app } from "./firebase.js";
 
 const db = getDatabase(app);
 
-// 🔐 CHECK LOGIN
 let username = localStorage.getItem("user");
 
 if (!username) {
   window.location.href = "index.html";
 }
 
-// 👤 LOAD USER DATA
 get(ref(db, "users/" + username)).then(snapshot => {
   if (snapshot.exists()) {
     document.getElementById("name").innerText = snapshot.val().name;
     document.getElementById("username").innerText = username;
-  } else {
-    document.getElementById("name").innerText = "User";
   }
 });
 
-// 🚪 LOGOUT
 window.logout = function() {
   signOut(auth).then(() => {
     localStorage.removeItem("user");
@@ -189,7 +128,6 @@ window.logout = function() {
   });
 }
 
-// 📱 MOBILE: video off for performance
 if (window.innerWidth < 768) {
   document.getElementById("bgVideo").style.display = "none";
 }
