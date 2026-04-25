@@ -37,7 +37,7 @@
       z-index:-1;
     }
 
-    /* TOP NAV */
+    /* TOP BAR */
     .topbar{
       position:fixed;
       top:0;
@@ -69,13 +69,13 @@
       transform:scale(0.95);
     }
 
-    /* CENTER CARD */
+    /* CENTER AREA FIX (MOVE UP) */
     .container{
       height:100vh;
       display:flex;
       justify-content:center;
-      align-items:center;
-      padding-top:60px;
+      align-items:flex-start;   /* 🔥 FIX: top align */
+      padding-top:120px;        /* 🔥 moved upward properly */
     }
 
     .card{
@@ -96,12 +96,13 @@
     .card p{
       font-size:14px;
       opacity:0.8;
-      margin-bottom:20px;
+      margin-bottom:12px;
     }
 
-    /* INSTAGRAM BUTTON */
+    /* INSTAGRAM BUTTON (UP SHIFTED LOOK) */
     .insta-btn{
       display:inline-block;
+      margin-top:8px;  /* 🔥 moved slightly up */
       padding:12px 18px;
       background:linear-gradient(45deg,#f58529,#dd2a7b,#8134af,#515bd4);
       color:white;
