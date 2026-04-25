@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Snake PRO - Mobile Game</title>
+  <title>Snake PRO - Slow Mode</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -52,7 +52,6 @@
 
     button:active{ transform:scale(0.95); }
 
-    /* CONTROLS */
     .controls{
       margin-top:10px;
       position:relative;
@@ -70,7 +69,6 @@
       background:#22c55e;
     }
 
-    /* START SCREEN */
     #startScreen{
       position:fixed;
       inset:0;
@@ -82,7 +80,6 @@
       z-index:9999;
     }
 
-    /* GAME OVER */
     #gameOver{
       display:none;
       position:fixed;
@@ -94,7 +91,6 @@
       z-index:9999;
     }
 
-    /* LOADING SCREEN */
     #loadingScreen{
       position:fixed;
       inset:0;
@@ -138,7 +134,7 @@
 
 <body>
 
-<!-- 🚀 LOADING -->
+<!-- LOADING -->
 <div id="loadingScreen">
   <div class="box">
     <h2>🐍 Loading Snake PRO...</h2>
@@ -147,27 +143,25 @@
   </div>
 </div>
 
-<h2>🐍 Snake PRO</h2>
+<h2>🐍 Snake PRO (SLOW MODE)</h2>
 <div class="score">Score: <span id="score">0</span></div>
 
 <canvas id="game" width="300" height="300"></canvas>
 
 <button onclick="restart()">Restart</button>
 
-<!-- START -->
 <div id="startScreen">
   <h2>Snake PRO</h2>
   <button onclick="start()">PLAY GAME</button>
 </div>
 
-<!-- GAME OVER -->
 <div id="gameOver">
   <h2>Game Over 💀</h2>
   <p>Score: <span id="final"></span></p>
   <button onclick="restart()">Play Again</button>
 </div>
 
-<!-- CONTROLS (BUTTON ONLY) -->
+<!-- CONTROLS -->
 <div class="controls">
   <button onclick="setDir('up')">⬆️</button><br>
   <button onclick="setDir('left')">⬅️</button>
@@ -177,7 +171,7 @@
 
 <script>
 
-/* LOADING 0–100 */
+/* LOADING 0-100 */
 let load=0;
 let loader=setInterval(()=>{
   load++;
@@ -221,7 +215,8 @@ function init(){
   document.getElementById("score").innerText=0;
   document.getElementById("gameOver").style.display="none";
 
-  game=setInterval(loop,110);
+  /* 🐌 SLOW SPEED FIX HERE */
+  game=setInterval(loop,160);
 }
 
 function random(){
