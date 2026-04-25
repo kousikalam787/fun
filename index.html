@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fun Zone</title>
+  <title>Fun Zone - Free Online Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SEO + AdSense Ready -->
-  <meta name="description" content="Fun Zone - Play free online games like Snake, Tic Tac Toe and Ludo.">
-  <meta name="keywords" content="games, online games, free games, ludo, snake game, tic tac toe">
+  <!-- SEO -->
+  <meta name="description" content="Fun Zone - Play free online games like Snake, Tic Tac Toe and Ludo instantly in your browser.">
+  <meta name="keywords" content="free games, online games, ludo, snake game, tic tac toe, play games">
+
+  <!-- AdSense verification (replace with your own ca-pub id) -->
   <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXX">
 
   <style>
@@ -94,6 +96,12 @@
       padding:20px;
     }
 
+    .intro{
+      margin-bottom:20px;
+      font-size:16px;
+      opacity:0.9;
+    }
+
     .card{
       background:rgba(30,41,59,0.85);
       padding:20px;
@@ -126,9 +134,10 @@
 
 <body>
 
+<!-- NAV -->
 <nav>
   <div class="nav-links">
-    <a href="home.html">Home</a>
+    <a href="index.html">Home</a>
     <a href="games.html">Games</a>
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
@@ -137,6 +146,7 @@
 
   <div class="profile" onclick="toggleMenu()">
     <div class="avatar" id="avatar">U</div>
+
     <div class="dropdown" id="menu">
       <p id="name">User</p>
       <button onclick="logout()">Logout</button>
@@ -144,12 +154,27 @@
   </div>
 </nav>
 
+<!-- MAIN -->
 <div class="main">
+
   <h2>🎮 Welcome to Fun Zone</h2>
 
-  <div class="card" onclick="openGame('snake.html')">🐍 Snake Game</div>
-  <div class="card" onclick="openGame('tictactoe.html')">❌⭕ Tic Tac Toe Online</div>
-  <div class="card" onclick="openGame('ludo.html')">🎲 Ludo Lite Online</div>
+  <p class="intro">
+    Play free online browser games instantly without download. Enjoy Snake, Tic Tac Toe and Ludo with smooth gameplay.
+  </p>
+
+  <div class="card" onclick="openGame('snake.html')">
+    🐍 Snake Game
+  </div>
+
+  <div class="card" onclick="openGame('tictactoe.html')">
+    ❌⭕ Tic Tac Toe Online
+  </div>
+
+  <div class="card" onclick="openGame('ludo.html')">
+    🎲 Ludo Lite Online
+  </div>
+
 </div>
 
 <!-- FOOTER -->
@@ -157,6 +182,7 @@
   <p>© 2026 Fun Zone</p>
   <a href="privacy.html">Privacy Policy</a>
   <a href="about.html">About</a>
+  <a href="contact.html">Contact</a>
 </footer>
 
 <script>
