@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Online Tic Tac Toe Pro</title>
+  <title>Multiplayer Tic Tac Toe</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -43,8 +43,7 @@
     .chat {
       margin-top:20px;
       max-width:300px;
-      margin-left:auto;
-      margin-right:auto;
+      margin:auto;
       text-align:left;
     }
 
@@ -54,17 +53,17 @@
       background:#020617;
       padding:10px;
       border-radius:10px;
-      font-size:14px;
     }
   </style>
 </head>
 
 <body>
 
-<h2>🌐 Multiplayer Tic Tac Toe</h2>
+<h2>❌⭕ Tic Tac Toe Online</h2>
 
 <input id="roomId" placeholder="Room Code">
 <br>
+
 <button onclick="createRoom()">Create Room</button>
 <button onclick="joinRoom()">Join Room</button>
 
@@ -73,9 +72,10 @@
 
 <div class="board" id="board"></div>
 
+<!-- CHAT -->
 <div class="chat">
   <div class="messages" id="messages"></div>
-  <input id="msg" placeholder="Type message">
+  <input id="msg" placeholder="Message">
   <button onclick="sendMsg()">Send</button>
 </div>
 
@@ -98,44 +98,55 @@ let player = null;
 let gameRef = null;
 let chatRef = null;
 
-// CREATE ROOM
+/* ================= CREATE ROOM ================= */
 function createRoom(){
   room = Math.random().toString(36).substr(2,5);
   player = "X";
 
+  let password = prompt("Set Room Password:");
+
   db.ref("rooms/"+room).set({
     board:["","","","","","","","",""],
     turn:"X",
-    players: {
+    password: password,
+    players:{
       X: username,
       O: null
     }
   });
 
   document.getElementById("roomId").value = room;
-  document.getElementById("status").innerText = "You are X ("+username+")";
+  document.getElementById("status").innerText =
+    "Room Created. You are X";
 
   startListeners();
 }
 
-// JOIN ROOM
+/* ================= JOIN ROOM ================= */
 function joinRoom(){
   room = document.getElementById("roomId").value.trim();
   if(!room) return alert("Enter room code");
 
+  let pass = prompt("Enter Room Password:");
   player = "O";
+
   let ref = db.ref("rooms/"+room);
 
   ref.once("value").then(snap=>{
     if(!snap.exists()){
-      alert("Room not found");
+      alert("Room not found ❌");
       return;
     }
 
     let data = snap.val();
 
+    if(data.password !== pass){
+      alert("Wrong password ❌");
+      return;
+    }
+
     if(data.players && data.players.O){
-      alert("Room full");
+      alert("Room full ❌");
       return;
     }
 
@@ -143,13 +154,14 @@ function joinRoom(){
       O: username
     });
 
-    document.getElementById("status").innerText = "You are O ("+username+")";
+    document.getElementById("status").innerText =
+      "Joined Room. You are O";
 
     startListeners();
   });
 }
 
-// START LISTENERS (IMPORTANT FIX)
+/* ================= LISTENERS ================= */
 function startListeners(){
 
   if(gameRef) gameRef.off();
@@ -162,12 +174,10 @@ function startListeners(){
     let data = snap.val();
     if(!data) return;
 
-    drawBoard(data.board || []);
+    drawBoard(data.board);
 
-    if(data.players){
-      document.getElementById("turn").innerText =
-        "Turn: " + (data.players[data.turn] || "Waiting") + " ("+data.turn+")";
-    }
+    document.getElementById("turn").innerText =
+      "Turn: " + (data.players[data.turn] || "Waiting") + " ("+data.turn+")";
 
     if(checkWin(data.board)){
       document.getElementById("turn").innerText = "🏆 Game Over";
@@ -183,7 +193,7 @@ function startListeners(){
   });
 }
 
-// DRAW BOARD
+/* ================= BOARD ================= */
 function drawBoard(board){
   let div = document.getElementById("board");
   div.innerHTML="";
@@ -197,7 +207,7 @@ function drawBoard(board){
   });
 }
 
-// MOVE
+/* ================= MOVE ================= */
 function move(i){
   if(!room) return;
 
@@ -219,7 +229,7 @@ function move(i){
   });
 }
 
-// WIN CHECK
+/* ================= WIN CHECK ================= */
 function checkWin(b=[]){
   let p = [
     [0,1,2],[3,4,5],[6,7,8],
@@ -229,7 +239,7 @@ function checkWin(b=[]){
   return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
 }
 
-// CHAT SEND
+/* ================= CHAT ================= */
 function sendMsg(){
   if(!room) return;
 
