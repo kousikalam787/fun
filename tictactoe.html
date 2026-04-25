@@ -1,54 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tic Tac Toe FIXED PRO</title>
+  <title>TTT CLEAN ONLINE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body{margin:0;font-family:Arial;background:#0f172a;color:#fff;text-align:center}
-    input,button{padding:10px;margin:5px;border:none;border-radius:5px}
-    .board{display:grid;grid-template-columns:repeat(3,90px);gap:10px;justify-content:center;margin-top:20px}
-    .cell{width:90px;height:90px;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:35px;cursor:pointer;border-radius:10px}
-    .chat{margin-top:20px;max-width:300px;margin:auto;text-align:left}
-    .messages{height:150px;overflow:auto;background:#020617;padding:10px;border-radius:10px}
-    #popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);justify-content:center;align-items:center}
-    .box{background:#1e293b;padding:20px;border-radius:10px;width:250px}
-    .leave{background:red;color:white}
+    body{
+      margin:0;
+      font-family:Arial;
+      background:#0f172a;
+      color:white;
+      text-align:center;
+    }
+
+    input,button{
+      padding:10px;
+      margin:5px;
+      border:none;
+      border-radius:5px;
+    }
+
+    .board{
+      display:grid;
+      grid-template-columns:repeat(3,90px);
+      justify-content:center;
+      gap:10px;
+      margin-top:20px;
+    }
+
+    .cell{
+      width:90px;
+      height:90px;
+      background:#1e293b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:35px;
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    #popup{
+      display:none;
+      position:fixed;
+      top:0;left:0;
+      width:100%;height:100%;
+      background:rgba(0,0,0,.8);
+      justify-content:center;
+      align-items:center;
+    }
+
+    .box{
+      background:#1e293b;
+      padding:20px;
+      border-radius:10px;
+      width:250px;
+    }
   </style>
 </head>
 
 <body>
 
-<h2>❌⭕ Tic Tac Toe PRO FIX</h2>
+<h2>❌⭕ CLEAN TTT ONLINE</h2>
 
-<input id="roomId" placeholder="Room Code">
+<input id="room" placeholder="Room Code">
 <br>
+<button onclick="create()">Create</button>
+<button onclick="join()">Join</button>
 
-<button onclick="createRoom()">Create</button>
-<button onclick="joinRoom()">Join</button>
-<button class="leave" onclick="leaveRoom()">Leave</button>
-
-<p id="status">Not Connected</p>
+<p id="info"></p>
 <p id="turn"></p>
 
 <div class="board" id="board"></div>
 
-<div class="chat">
-  <div class="messages" id="messages"></div>
-  <input id="msg">
-  <button onclick="sendMsg()">Send</button>
-</div>
-
 <div id="popup">
   <div class="box">
-    <h2 id="winText"></h2>
-    <button onclick="rematch()">Rematch</button>
-    <button onclick="restartGame()">Restart</button>
+    <h2 id="msg"></h2>
+    <button onclick="reset()">Rematch</button>
+    <button onclick="location.reload()">Restart</button>
   </div>
 </div>
-
-<audio id="winSound" src="win.mp3"></audio>
-<audio id="tapSound" src="tap.mp3"></audio>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -62,164 +93,109 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let user=localStorage.getItem("user")||"Guest";
-
+let user=localStorage.getItem("user")||"P1";
 let room=null;
-let player=null;
+let me=null;
 let ended=false;
 
-let gameRef=null;
-let chatRef=null;
-
-/* SAFE ROOM FIX */
-function normalizeRoom(data){
-  if(!data.board) data.board=["","","","","","","","",""];
-  if(!data.players) data.players={X:"",O:""};
-  if(!data.turn) data.turn="X";
-  return data;
-}
-
-/* START */
-function start(){
-
-  if(!room) return;
-
-  if(gameRef) gameRef.off();
-  if(chatRef) chatRef.off();
-
-  gameRef=db.ref("rooms/"+room);
-  chatRef=db.ref("rooms/"+room+"/chat");
-
-  gameRef.on("value",snap=>{
-
-    let d=normalizeRoom(snap.val()||{});
-
-    draw(d.board);
-
-    let pX=d.players.X||"Waiting";
-    let pO=d.players.O||"Waiting";
-
-    document.getElementById("turn").innerText=
-      `X:${pX} | O:${pO} | Turn:${d.turn}`;
-
-    let win=check(d.board);
-    let draw=d.board.every(x=>x!=="");
-
-    if((win||draw)&&!ended){
-      ended=true;
-
-      play("winSound");
-
-      if(win){
-        let w=d.turn==="X"?"O":"X";
-        let name=d.players[w];
-
-        show(name===user?"🎉 You Win!":"😔 You Lost! Winner: "+name);
-      } else {
-        show("🤝 Draw!");
-      }
-    }
-  });
-
-  chatRef.on("child_added",s=>{
-    let d=s.val();
-    if(!d) return;
-    document.getElementById("messages").innerHTML+=
-      `<p><b>${d.user}:</b> ${d.msg}</p>`;
-  });
-}
-
 /* CREATE */
-function createRoom(){
-
+function create(){
   room=Math.random().toString(36).substr(2,5);
-  player="X";
+  me="X";
   ended=false;
-
-  let pass=prompt("Password:");
 
   db.ref("rooms/"+room).set({
     board:["","","","","","","","",""],
     turn:"X",
-    password:pass,
     players:{X:user,O:""}
   });
 
   db.ref("rooms/"+room+"/players/X").onDisconnect().remove();
 
-  document.getElementById("status").innerText="Created "+room;
+  document.getElementById("info").innerText="Room: "+room;
 
   start();
 }
 
-/* JOIN (FIXED SAFE LOAD) */
-function joinRoom(){
-
-  room=document.getElementById("roomId").value.trim();
+/* JOIN */
+function join(){
+  room=document.getElementById("room").value.trim();
   if(!room) return;
 
-  let pass=prompt("Password:");
-  player="O";
+  me="O";
   ended=false;
 
-  db.ref("rooms/"+room).once("value").then(s=>{
+  db.ref("rooms/"+room+"/players/O").set(user);
+  db.ref("rooms/"+room+"/players/O").onDisconnect().remove();
 
-    if(!s.exists()){
-      alert("Room not found");
-      return;
+  document.getElementById("info").innerText="Joined: "+room;
+
+  start();
+}
+
+/* START GAME */
+function start(){
+
+  let ref=db.ref("rooms/"+room);
+
+  ref.on("value",snap=>{
+
+    let d=snap.val();
+    if(!d || !d.board) return;
+
+    draw(d.board);
+
+    document.getElementById("turn").innerText=
+      `Turn: ${d.turn}`;
+
+    if(check(d.board) && !ended){
+      ended=true;
+
+      let winner=d.turn==="X"?"O":"X";
+      let name=d.players[winner];
+
+      show(name===user?"You Win 🎉":"You Lose 😔");
     }
 
-    let d=normalizeRoom(s.val());
-
-    if(d.password!==pass){
-      alert("Wrong password");
-      return;
+    if(d.board.every(x=>x!=="") && !ended){
+      ended=true;
+      show("Draw 🤝");
     }
-
-    db.ref("rooms/"+room+"/players/O").set(user);
-    db.ref("rooms/"+room+"/players/O").onDisconnect().remove();
-
-    document.getElementById("status").innerText="Joined "+room;
-
-    start();
   });
 }
 
 /* DRAW */
 function draw(b){
-  let div=document.getElementById("board");
-  div.innerHTML="";
-
+  let d=document.getElementById("board");
+  d.innerHTML="";
   b.forEach((v,i)=>{
     let c=document.createElement("div");
     c.className="cell";
     c.innerText=v;
     c.onclick=()=>move(i);
-    div.appendChild(c);
+    d.appendChild(c);
   });
 }
 
 /* MOVE */
 function move(i){
-
   if(ended) return;
-
-  play("tapSound");
 
   let ref=db.ref("rooms/"+room);
 
   ref.once("value").then(s=>{
 
-    let d=normalizeRoom(s.val()||{});
+    let d=s.val();
+    if(!d) return;
 
-    if(d.board[i]||d.turn!==player) return;
+    if(d.board[i]!=="" || d.turn!==me) return;
 
     let b=[...d.board];
-    b[i]=player;
+    b[i]=me;
 
     ref.update({
       board:b,
-      turn:player==="X"?"O":"X"
+      turn:me==="X"?"O":"X"
     });
   });
 }
@@ -236,12 +212,12 @@ function check(b){
 
 /* POPUP */
 function show(t){
-  document.getElementById("winText").innerText=t;
+  document.getElementById("msg").innerText=t;
   document.getElementById("popup").style.display="flex";
 }
 
-/* REMATCH */
-function rematch(){
+/* RESET */
+function reset(){
   ended=false;
 
   db.ref("rooms/"+room).update({
@@ -250,40 +226,6 @@ function rematch(){
   });
 
   document.getElementById("popup").style.display="none";
-}
-
-/* RESTART */
-function restartGame(){
-  location.reload();
-}
-
-/* LEAVE */
-function leaveRoom(){
-  if(room){
-    db.ref("rooms/"+room+"/players/"+player).remove();
-  }
-  location.reload();
-}
-
-/* CHAT */
-function sendMsg(){
-  if(!room) return;
-
-  let m=document.getElementById("msg").value;
-  if(!m) return;
-
-  db.ref("rooms/"+room+"/chat").push({
-    user:user,
-    msg:m
-  });
-
-  document.getElementById("msg").value="";
-}
-
-/* SOUND */
-function play(id){
-  let a=document.getElementById(id);
-  if(a){a.currentTime=0;a.play().catch(()=>{});}
 }
 
 </script>
