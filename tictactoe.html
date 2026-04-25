@@ -8,7 +8,8 @@
     body{
       margin:0;
       font-family:Arial;
-      background:#0f172a;
+      background:url('bgl.jpg') no-repeat center center fixed;
+      background-size:cover;
       color:white;
       text-align:center;
     }
@@ -20,7 +21,7 @@
       border-radius:5px;
     }
 
-    /* 🟩 PROFESSIONAL BOARD */
+    /* 🎯 BOARD WITH IMAGE */
     .board{
       display:grid;
       grid-template-columns:repeat(3,90px);
@@ -34,15 +35,15 @@
       width:max-content;
       margin-left:auto;
       margin-right:auto;
-      box-shadow:0 10px 25px rgba(0,0,0,0.5);
+      box-shadow:0 10px 25px rgba(0,0,0,0.6);
     }
 
-    /* 🟦 CELLS */
+    /* CELLS */
     .cell{
       width:90px;
       height:90px;
 
-      background:rgba(30,41,59,0.6);
+      background:rgba(30,41,59,0.55);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -134,7 +135,7 @@ function play(id){
   }
 }
 
-/* CREATE ROOM */
+/* CREATE */
 function create(){
   room=Math.random().toString(36).substr(2,5);
   me="X";
@@ -154,7 +155,7 @@ function create(){
   start();
 }
 
-/* JOIN ROOM */
+/* JOIN */
 function join(){
   room=document.getElementById("room").value.trim();
   if(!room) return;
@@ -240,7 +241,7 @@ function move(i){
   });
 }
 
-/* WIN CHECK */
+/* WIN */
 function check(b){
   let p=[
     [0,1,2],[3,4,5],[6,7,8],
@@ -256,7 +257,7 @@ function show(t){
   document.getElementById("popup").style.display="flex";
 }
 
-/* REMATCH */
+/* RESET */
 function reset(){
   ended=false;
 
