@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fun Zone</title>
+
+  <style>
+    body {
+      margin:0;
+      font-family:Arial;
+      color:white;
+    }
+
+    /* 🎬 VIDEO BACKGROUND */
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    /* DARK OVERLAY */
+    body::after {
+      content: "";
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,0.6);
+      z-index:-1;
+    }
+
+    .topbar {
+      background: rgba(2,6,23,0.8);
+      padding:15px;
+      font-size:20px;
+      font-weight:bold;
+      backdrop-filter: blur(10px);
+    }
+
+    .container {
+      display:flex;
+    }
+
+    .sidebar {
+      width:220px;
+      background: rgba(30,41,59,0.8);
+      padding:20px;
+      height:100vh;
+      backdrop-filter: blur(10px);
+    }
+
+    .profile {
+      text-align:center;
+      margin-bottom:20px;
+    }
+
+    .profile img {
+      width:70px;
+      border-radius:50%;
+    }
+
+    .main {
+      flex:1;
+      padding:20px;
+    }
+
+    .card {
+      background: rgba(30,41,59,0.8);
+      padding:20px;
+      margin:10px;
+      border-radius:10px;
+      backdrop-filter: blur(10px);
+      transition:0.3s;
+      cursor:pointer;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      background:#22c55e;
+    }
+
+    button {
+      margin-top:10px;
+      padding:10px;
+      width:100%;
+      background:red;
+      border:none;
+      color:white;
+      cursor:pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 🎬 VIDEO -->
+<video autoplay muted loop id="bgVideo">
+  <source src="assets/bg.mp4" type="video/mp4">
+</video>
+
+<!-- TOP BAR -->
+<div class="topbar">🎮 Fun Zone</div>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="profile">
+      <img src="https://i.imgur.com/6VBx3io.png">
+      <h3 id="name">Loading...</h3>
+      <p>@<span id="username"></span></p>
+    </div>
+
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <h2>Games</h2>
+
+    <div class="card">🐍 Snake Game</div>
+    <div class="card">❌⭕ Tic Tac Toe</div>
+    <div class="card">🧠 Quiz Game</div>
+
+  </div>
+
+</div>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  get
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+import { app } from "./firebase.js";
+
+const db = getDatabase(app);
+
+// 🔐 CHECK LOGIN
+let username = localStorage.getItem("user");
+
+if (!username) {
+  window.location.href = "index.html";
+}
+
+// 👤 LOAD USER DATA
+get(ref(db, "users/" + username)).then(snapshot => {
+  if (snapshot.exists()) {
+    document.getElementById("name").innerText = snapshot.val().name;
+    document.getElementById("username").innerText = username;
+  }
+});
+
+// 🚪 LOGOUT
+window.logout = function() {
+  signOut(auth).then(() => {
+    localStorage.removeItem("user");
+    window.location.href = "index.html";
+  });
+}
+
+// 📱 OPTIONAL: mobile pe video off
+if (window.innerWidth < 768) {
+  document.getElementById("bgVideo").style.display = "none";
+}
+</script>
+
+</body>
+  </html>
