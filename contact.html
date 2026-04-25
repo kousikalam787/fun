@@ -13,12 +13,12 @@
     }
 
     body{
-      color:white;
       min-height:100vh;
-      overflow-x:hidden;
+      color:white;
+      overflow:hidden;
     }
 
-    /* 🎥 FULL SCREEN VIDEO FIX */
+    /* 🎥 FULL VIDEO BACKGROUND FIX */
     #bgVideo{
       position:fixed;
       top:0;
@@ -37,99 +37,49 @@
       z-index:-1;
     }
 
-    /* NAV FIX */
-    nav{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px 18px;
-      background:rgba(0,0,0,0.6);
-      flex-wrap:wrap;
-    }
-
-    .nav-links{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .nav-links a{
-      color:white;
-      text-decoration:none;
-      font-weight:bold;
-      font-size:14px;
-      padding:6px 10px;
-      border-radius:6px;
-      transition:0.2s;
-    }
-
-    .nav-links a:hover{
-      background:#22c55e;
-    }
-
-    /* CENTER CONTENT */
+    /* CENTER LAYOUT */
     .container{
-      padding:40px 15px;
+      height:100vh;
       display:flex;
       justify-content:center;
       align-items:center;
-      flex-direction:column;
     }
 
     .card{
+      text-align:center;
       background:rgba(30,41,59,0.85);
-      padding:25px;
+      padding:30px 25px;
       border-radius:15px;
       width:90%;
-      max-width:420px;
-      text-align:center;
-      box-shadow:0 0 15px rgba(0,0,0,0.4);
+      max-width:350px;
+      box-shadow:0 0 20px rgba(0,0,0,0.5);
     }
 
     .card h2{
       margin-bottom:10px;
+      font-size:22px;
     }
 
     .card p{
       font-size:14px;
-      opacity:0.9;
-      margin-bottom:15px;
+      opacity:0.8;
+      margin-bottom:20px;
     }
 
-    input, textarea{
-      width:100%;
-      padding:10px;
-      margin:6px 0;
-      border:none;
-      border-radius:6px;
-      outline:none;
-    }
-
-    button{
-      padding:10px 15px;
-      border:none;
-      background:#22c55e;
-      color:white;
-      border-radius:6px;
-      cursor:pointer;
-      width:100%;
-      margin-top:10px;
-    }
-
-    button:active{
-      transform:scale(0.97);
-    }
-
-    /* 📱 INSTAGRAM BUTTON */
-    .insta{
+    /* 📷 INSTAGRAM BUTTON */
+    .insta-btn{
       display:inline-block;
-      margin-top:15px;
-      padding:10px 14px;
+      padding:12px 18px;
       background:linear-gradient(45deg,#f58529,#dd2a7b,#8134af,#515bd4);
       color:white;
       text-decoration:none;
-      border-radius:8px;
+      border-radius:10px;
       font-weight:bold;
+      transition:0.2s;
+    }
+
+    .insta-btn:active{
+      transform:scale(0.96);
     }
 
   </style>
@@ -142,34 +92,15 @@
   <source src="bg.mp4" type="video/mp4">
 </video>
 
-<!-- NAV -->
-<nav>
-  <h3>🎮 Fun Zone</h3>
-
-  <div class="nav-links">
-    <a href="home.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-    <a href="privacy.html">Policy</a>
-  </div>
-</nav>
-
-<!-- CONTENT -->
+<!-- CENTER CARD -->
 <div class="container">
 
   <div class="card">
 
     <h2>📞 Contact Us</h2>
-    <p>Have any issue or feedback? Send us a message</p>
+    <p>Follow us for updates, games & new features</p>
 
-    <input type="text" placeholder="Your Name">
-    <input type="email" placeholder="Your Email">
-    <textarea rows="4" placeholder="Your Message"></textarea>
-
-    <button>Send Message</button>
-
-    <!-- INSTAGRAM LINK -->
-    <a class="insta"
+    <a class="insta-btn"
        href="https://www.instagram.com/______black_____444__?igsh=am9uZHFpam5rY3Jp"
        target="_blank">
       📷 Follow on Instagram
