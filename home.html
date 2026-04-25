@@ -4,6 +4,11 @@
   <title>Fun Zone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- SEO + AdSense Ready -->
+  <meta name="description" content="Fun Zone - Play free online games like Snake, Tic Tac Toe and Ludo.">
+  <meta name="keywords" content="games, online games, free games, ludo, snake game, tic tac toe">
+  <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXX">
+
   <style>
     body{
       margin:0;
@@ -22,7 +27,6 @@
       z-index:-1;
     }
 
-    /* NAV */
     nav{
       display:flex;
       justify-content:space-between;
@@ -49,7 +53,6 @@
       color:#22c55e;
     }
 
-    /* PROFILE */
     .profile{
       margin-left:auto;
       position:relative;
@@ -87,7 +90,6 @@
       border-radius:5px;
     }
 
-    /* MAIN */
     .main{
       padding:20px;
     }
@@ -107,14 +109,24 @@
       background:#22c55e;
     }
 
+    footer{
+      text-align:center;
+      padding:20px;
+      background:rgba(0,0,0,0.8);
+      margin-top:20px;
+    }
+
+    footer a{
+      color:#22c55e;
+      text-decoration:none;
+      margin:0 5px;
+    }
   </style>
 </head>
 
 <body>
 
-<!-- NAV -->
 <nav>
-
   <div class="nav-links">
     <a href="home.html">Home</a>
     <a href="games.html">Games</a>
@@ -125,80 +137,39 @@
 
   <div class="profile" onclick="toggleMenu()">
     <div class="avatar" id="avatar">U</div>
-
     <div class="dropdown" id="menu">
       <p id="name">User</p>
       <button onclick="logout()">Logout</button>
     </div>
   </div>
-
 </nav>
 
-<!-- MAIN -->
 <div class="main">
-
   <h2>🎮 Welcome to Fun Zone</h2>
 
-  <!-- SNAKE -->
-  <div class="card" onclick="openGame('snake.html')">
-    🐍 Snake Game
-  </div>
-
-  <!-- TIC TAC TOE -->
-  <div class="card" onclick="openGame('tictactoe.html')">
-    ❌⭕ Tic Tac Toe Online
-  </div>
-
-  <!-- LUDO ADDED PROPERLY -->
-  <div class="card" onclick="openGame('ludo.html')">
-    🎲 Ludo Lite Online (Multiplayer)
-  </div>
-
+  <div class="card" onclick="openGame('snake.html')">🐍 Snake Game</div>
+  <div class="card" onclick="openGame('tictactoe.html')">❌⭕ Tic Tac Toe Online</div>
+  <div class="card" onclick="openGame('ludo.html')">🎲 Ludo Lite Online</div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Fun Zone</p>
+  <a href="privacy.html">Privacy Policy</a>
+  <a href="about.html">About</a>
+</footer>
 
 <script>
-const firebaseConfig={
-  apiKey:"AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
-  authDomain:"kousik-game.firebaseapp.com",
-  databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-let username=localStorage.getItem("user");
-
-if(!username){
-  window.location.href="index.html";
-}
-
-document.getElementById("avatar").innerText=username.charAt(0).toUpperCase();
-document.getElementById("name").innerText=username;
-
-/* MENU */
 function toggleMenu(){
   let m=document.getElementById("menu");
   m.style.display=m.style.display==="block"?"none":"block";
 }
 
-/* LOGOUT */
 function logout(){
-  firebase.auth().signOut().then(()=>{
-    localStorage.removeItem("user");
-    window.location.href="index.html";
-  });
+  localStorage.removeItem("user");
+  window.location.href="index.html";
 }
 
-/* CLOSE MENU */
-window.onclick=function(e){
-  if(!e.target.closest(".profile")){
-    document.getElementById("menu").style.display="none";
-  }
-}
-
-/* OPEN GAME */
 function openGame(g){
   window.location.href=g;
 }
