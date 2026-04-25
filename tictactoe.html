@@ -55,7 +55,6 @@
       border-radius:10px;
     }
 
-    /* POPUP */
     #popup {
       display:none;
       position:fixed;
@@ -71,11 +70,6 @@
       padding:20px;
       border-radius:10px;
       width:250px;
-    }
-
-    .popup-box button {
-      width:100%;
-      margin-top:10px;
     }
   </style>
 </head>
@@ -95,19 +89,17 @@
 
 <div class="board" id="board"></div>
 
-<!-- CHAT -->
 <div class="chat">
   <div class="messages" id="messages"></div>
   <input id="msg" placeholder="Message">
   <button onclick="sendMsg()">Send</button>
 </div>
 
-<!-- POPUP -->
 <div id="popup">
   <div class="popup-box">
-    <h2 id="winText">Result</h2>
+    <h2 id="winText"></h2>
     <button onclick="rematch()">🔁 Rematch</button>
-    <button onclick="restartGame()">🔄 Restart Room</button>
+    <button onclick="restartGame()">🔄 Restart</button>
   </div>
 </div>
 
@@ -123,27 +115,24 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* AUDIO */
-let winSound = new Audio("win.mp3");
-let tapSound = new Audio("tap.mp3");
-
-/* STATE */
 let username = localStorage.getItem("user") || "Guest";
 let room = null;
 let player = null;
-let gameEnded = false;
 
 let gameRef = null;
 let chatRef = null;
+let gameEnded = false;
 
-/* CREATE ROOM */
+/* ================= CREATE ROOM ================= */
 function createRoom(){
   room = Math.random().toString(36).substr(2,5);
   player = "X";
 
   let password = prompt("Set Room Password:");
 
-  db.ref("rooms/"+room).set({
+  let ref = db.ref("rooms/"+room);
+
+  ref.set({
     board:["","","","","","","","",""],
     turn:"X",
     password: password,
@@ -153,13 +142,16 @@ function createRoom(){
     }
   });
 
+  // 🔥 AUTO REMOVE ON DISCONNECT (IMPORTANT FIX)
+  ref.child("players/X").onDisconnect().remove();
+
   document.getElementById("roomId").value = room;
   document.getElementById("status").innerText = "Room Created (X)";
 
   startListeners();
 }
 
-/* JOIN ROOM */
+/* ================= JOIN ROOM ================= */
 function joinRoom(){
   room = document.getElementById("roomId").value.trim();
   if(!room) return alert("Enter room code");
@@ -167,7 +159,9 @@ function joinRoom(){
   let pass = prompt("Enter Password:");
   player = "O";
 
-  db.ref("rooms/"+room).once("value").then(snap=>{
+  let ref = db.ref("rooms/"+room);
+
+  ref.once("value").then(snap=>{
     if(!snap.exists()){
       alert("Room not found ❌");
       return;
@@ -180,14 +174,10 @@ function joinRoom(){
       return;
     }
 
-    if(data.players && data.players.O){
-      alert("Room full ❌");
-      return;
-    }
+    ref.child("players/O").set(username);
 
-    db.ref("rooms/"+room+"/players").update({
-      O: username
-    });
+    // 🔥 AUTO REMOVE ON DISCONNECT (IMPORTANT FIX)
+    ref.child("players/O").onDisconnect().remove();
 
     document.getElementById("status").innerText = "Joined Room (O)";
 
@@ -195,7 +185,7 @@ function joinRoom(){
   });
 }
 
-/* LISTENERS */
+/* ================= LISTENERS ================= */
 function startListeners(){
 
   if(gameRef) gameRef.off();
@@ -210,28 +200,24 @@ function startListeners(){
 
     drawBoard(data.board);
 
+    // 🔥 LIVE PLAYER FIX (auto update UI)
+    let pX = data.players?.X || "Empty";
+    let pO = data.players?.O || "Empty";
+
     document.getElementById("turn").innerText =
-      "Turn: " + (data.players[data.turn] || "Waiting") + " ("+data.turn+")";
+      `X: ${pX} | O: ${pO} | Turn: ${data.turn}`;
 
-    let win = checkWin(data.board);
-    let draw = data.board.every(x => x !== "");
-
-    if((win || draw) && !gameEnded){
+    if(checkWin(data.board) && !gameEnded){
       gameEnded = true;
 
-      winSound.currentTime = 0;
-      winSound.play();
+      let winner = data.players[data.turn === "X" ? "O" : "X"];
 
-      let msg;
+      showPopup("🏆 Winner: " + winner);
+    }
 
-      if(win){
-        let winner = data.players[data.turn === "X" ? "O" : "X"];
-        msg = "🏆 Winner: " + winner;
-      } else {
-        msg = "🤝 Game Draw!";
-      }
-
-      showPopup(msg);
+    if(data.board.every(x => x !== "") && !gameEnded){
+      gameEnded = true;
+      showPopup("🤝 Game Draw!");
     }
   });
 
@@ -244,7 +230,7 @@ function startListeners(){
   });
 }
 
-/* BOARD */
+/* ================= BOARD ================= */
 function drawBoard(board){
   let div = document.getElementById("board");
   div.innerHTML="";
@@ -258,12 +244,9 @@ function drawBoard(board){
   });
 }
 
-/* MOVE */
+/* ================= MOVE ================= */
 function move(i){
   if(gameEnded) return;
-
-  tapSound.currentTime = 0;
-  tapSound.play();
 
   let ref = db.ref("rooms/"+room);
 
@@ -283,7 +266,7 @@ function move(i){
   });
 }
 
-/* WIN CHECK */
+/* ================= WIN ================= */
 function checkWin(b=[]){
   let p = [
     [0,1,2],[3,4,5],[6,7,8],
@@ -293,13 +276,13 @@ function checkWin(b=[]){
   return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
 }
 
-/* POPUP */
+/* ================= POPUP ================= */
 function showPopup(text){
   document.getElementById("winText").innerText = text;
   document.getElementById("popup").style.display = "flex";
 }
 
-/* REMATCH */
+/* ================= REMATCH ================= */
 function rematch(){
   gameEnded = false;
 
@@ -311,12 +294,12 @@ function rematch(){
   document.getElementById("popup").style.display="none";
 }
 
-/* RESTART */
+/* ================= RESTART ================= */
 function restartGame(){
   location.reload();
 }
 
-/* CHAT */
+/* ================= CHAT ================= */
 function sendMsg(){
   if(!room) return;
 
