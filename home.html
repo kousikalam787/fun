@@ -3,6 +3,9 @@
 <head>
   <title>Fun Zone</title>
 
+  <!-- 📱 MOBILE FIX -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       margin:0;
@@ -39,6 +42,7 @@
       font-size:20px;
       font-weight:bold;
       backdrop-filter: blur(10px);
+      text-align:center;
     }
 
     .container {
@@ -71,7 +75,7 @@
     .card {
       background: rgba(30,41,59,0.8);
       padding:20px;
-      margin:10px;
+      margin:10px 0;
       border-radius:10px;
       backdrop-filter: blur(10px);
       transition:0.3s;
@@ -91,6 +95,23 @@
       border:none;
       color:white;
       cursor:pointer;
+      border-radius:5px;
+    }
+
+    /* 📱 MOBILE RESPONSIVE */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width:100%;
+        height:auto;
+      }
+
+      .main {
+        padding:10px;
+      }
     }
   </style>
 </head>
@@ -125,7 +146,6 @@
     <div class="card">🐍 Snake Game</div>
     <div class="card">❌⭕ Tic Tac Toe</div>
     <div class="card">🧠 Quiz Game</div>
-
   </div>
 
 </div>
@@ -156,6 +176,8 @@ get(ref(db, "users/" + username)).then(snapshot => {
   if (snapshot.exists()) {
     document.getElementById("name").innerText = snapshot.val().name;
     document.getElementById("username").innerText = username;
+  } else {
+    document.getElementById("name").innerText = "User";
   }
 });
 
@@ -167,11 +189,11 @@ window.logout = function() {
   });
 }
 
-// 📱 OPTIONAL: mobile pe video off
+// 📱 MOBILE: video off for performance
 if (window.innerWidth < 768) {
   document.getElementById("bgVideo").style.display = "none";
 }
 </script>
 
 </body>
-  </html>
+</html>
