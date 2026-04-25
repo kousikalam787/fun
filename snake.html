@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Snake Game PRO FIX</title>
+  <title>Snake Game PRO SWIPE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -11,6 +11,8 @@
       text-align:center;
       color:white;
       background:url('bgn.jpg') center/cover fixed;
+      touch-action:none;
+      overflow:hidden;
     }
 
     body::after{
@@ -21,59 +23,55 @@
       z-index:-1;
     }
 
+    h2{margin-top:10px;}
+
     canvas{
-      margin-top:15px;
+      margin-top:10px;
       border-radius:12px;
       background:url('box.jpg') center/cover;
       display:block;
       margin-left:auto;
       margin-right:auto;
+      z-index:2;
+      position:relative;
     }
 
     .score{
-      margin:10px;
+      margin:5px;
     }
 
     button{
-      padding:10px 16px;
+      padding:10px 14px;
       margin:5px;
       border:none;
       border-radius:6px;
       background:#22c55e;
       color:white;
       cursor:pointer;
-
-      /* 🔥 FIX BUTTON CLICK ISSUE */
       position:relative;
-      z-index:50;
-      touch-action:manipulation;
+      z-index:10;
     }
 
-    button:active{
-      transform:scale(0.95);
-    }
+    button:active{transform:scale(0.95);}
 
+    /* CONTROLS */
     .controls{
-      margin-top:10px;
       position:relative;
-      z-index:50;
-      touch-action:none;
+      z-index:10;
+      margin-top:10px;
     }
 
     .controls button{
       width:60px;
       height:60px;
-      font-size:20px;
       background:#1e293b;
-      color:white;
-      z-index:50;
     }
 
     .controls button:active{
       background:#22c55e;
     }
 
-    /* START SCREEN FIX */
+    /* START */
     #startScreen{
       position:fixed;
       inset:0;
@@ -85,6 +83,7 @@
       z-index:9999;
     }
 
+    /* GAME OVER */
     #gameOver{
       display:none;
       position:fixed;
@@ -95,47 +94,114 @@
       flex-direction:column;
       z-index:9999;
     }
+
+    /* 🚀 LOADING SCREEN */
+    #loadingScreen{
+      position:fixed;
+      inset:0;
+      background:url('bgk.jpg') center/cover no-repeat;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:99999;
+    }
+
+    #loadingScreen::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+    }
+
+    .loadBox{
+      position:relative;
+      z-index:1;
+      width:80%;
+      max-width:300px;
+      text-align:center;
+    }
+
+    .bar{
+      width:100%;
+      height:12px;
+      background:#1e293b;
+      border-radius:20px;
+      overflow:hidden;
+    }
+
+    #fill{
+      width:0%;
+      height:100%;
+      background:#22c55e;
+      transition:0.2s;
+    }
   </style>
 </head>
 
 <body>
 
-<h2>🐍 Snake Game PRO FIX</h2>
+<!-- 🚀 LOADING -->
+<div id="loadingScreen">
+  <div class="loadBox">
+    <h2>🐍 Loading...</h2>
+    <div class="bar"><div id="fill"></div></div>
+    <p id="percent">0%</p>
+  </div>
+</div>
+
+<h2>🐍 Snake PRO SWIPE</h2>
 <div class="score">Score: <span id="score">0</span></div>
 
 <canvas id="game" width="300" height="300"></canvas>
 
-<br>
 <button onclick="restart()">Restart</button>
 
+<!-- START -->
 <div id="startScreen">
-  <h2>Start Game</h2>
+  <h2>Tap Play</h2>
   <button onclick="start()">PLAY</button>
 </div>
 
+<!-- GAME OVER -->
 <div id="gameOver">
   <h2>Game Over 💀</h2>
   <p>Score: <span id="final"></span></p>
   <button onclick="restart()">Play Again</button>
 </div>
 
+<!-- CONTROLS -->
 <div class="controls">
-  <button ontouchstart="dir('up')" onclick="dir('up')">⬆️</button><br>
-  <button ontouchstart="dir('left')" onclick="dir('left')">⬅️</button>
-  <button ontouchstart="dir('down')" onclick="dir('down')">⬇️</button>
-  <button ontouchstart="dir('right')" onclick="dir('right')">➡️</button>
+  <button onclick="dir('up')">⬆️</button><br>
+  <button onclick="dir('left')">⬅️</button>
+  <button onclick="dir('down')">⬇️</button>
+  <button onclick="dir('right')">➡️</button>
 </div>
 
 <script>
 
+/* 🚀 LOADING 0-100 */
+let load=0;
+let loadInt=setInterval(()=>{
+  load++;
+  document.getElementById("fill").style.width=load+"%";
+  document.getElementById("percent").innerText=load+"%";
+
+  if(load>=100){
+    clearInterval(loadInt);
+    setTimeout(()=>{
+      document.getElementById("loadingScreen").style.display="none";
+    },300);
+  }
+},15);
+
+/* GAME */
 const c=document.getElementById("game");
 const ctx=c.getContext("2d");
 
 let snake=[],food,d="RIGHT",score=0,game;
 let box=15;
-let speed=110;
 
-/* 🍎 APPLE IMAGE */
+/* 🍎 APPLE */
 let apple=new Image();
 apple.src="apple.png";
 
@@ -157,7 +223,7 @@ function init(){
   document.getElementById("score").innerText=0;
   document.getElementById("gameOver").style.display="none";
 
-  game=setInterval(loop,speed);
+  game=setInterval(loop,110);
 }
 
 function random(){
@@ -177,24 +243,14 @@ function loop(){
     ctx.fillRect(s.x,s.y,box,box);
   });
 
-  /* 🍎 GLOW APPLE FIX */
+  /* 🍎 GLOW APPLE */
   if(apple.complete){
-
-    // glow effect
     ctx.shadowColor="red";
-    ctx.shadowBlur=15;
+    ctx.shadowBlur=12;
 
-    ctx.drawImage(
-      apple,
-      food.x+2,
-      food.y+2,
-      box-4,
-      box-4
-    );
+    ctx.drawImage(apple,food.x+2,food.y+2,box-4,box-4);
 
-    // reset glow
     ctx.shadowBlur=0;
-
   }else{
     ctx.fillStyle="red";
     ctx.fillRect(food.x,food.y,box,box);
@@ -222,13 +278,33 @@ function loop(){
   snake.unshift({x,y});
 }
 
-/* CONTROL FIX */
+/* 🔥 BUTTON + SWIPE FIX */
 function dir(x){
   if(x==="left" && d!=="RIGHT") d="LEFT";
   if(x==="right" && d!=="LEFT") d="RIGHT";
   if(x==="up" && d!=="DOWN") d="UP";
   if(x==="down" && d!=="UP") d="DOWN";
 }
+
+/* SWIPE CONTROL */
+let sx,sy;
+document.addEventListener("touchstart",e=>{
+  sx=e.touches[0].clientX;
+  sy=e.touches[0].clientY;
+});
+
+document.addEventListener("touchend",e=>{
+  let dx=e.changedTouches[0].clientX-sx;
+  let dy=e.changedTouches[0].clientY-sy;
+
+  if(Math.abs(dx)>Math.abs(dy)){
+    if(dx>0)dir("right");
+    else dir("left");
+  }else{
+    if(dy>0)dir("down");
+    else dir("up");
+  }
+});
 
 /* COLLISION */
 function hit(x,y){
