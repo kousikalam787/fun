@@ -20,26 +20,46 @@
       border-radius:5px;
     }
 
+    /* 🟩 PROFESSIONAL BOARD */
     .board{
       display:grid;
       grid-template-columns:repeat(3,90px);
       justify-content:center;
       gap:10px;
       margin-top:20px;
+
+      background:url('board.jpg') center/cover no-repeat;
+      padding:15px;
+      border-radius:15px;
+      width:max-content;
+      margin-left:auto;
+      margin-right:auto;
+      box-shadow:0 10px 25px rgba(0,0,0,0.5);
     }
 
+    /* 🟦 CELLS */
     .cell{
       width:90px;
       height:90px;
-      background:#1e293b;
+
+      background:rgba(30,41,59,0.6);
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:35px;
       border-radius:10px;
       cursor:pointer;
+
+      backdrop-filter:blur(3px);
+      transition:0.2s;
     }
 
+    .cell:hover{
+      transform:scale(1.05);
+      background:rgba(34,197,94,0.6);
+    }
+
+    /* POPUP */
     #popup{
       display:none;
       position:fixed;
@@ -151,11 +171,9 @@ function join(){
   start();
 }
 
-/* START GAME */
+/* START */
 function start(){
-
   db.ref("rooms/"+room).on("value",snap=>{
-
     let d=snap.val();
     if(!d || !d.board) return;
 
@@ -169,17 +187,12 @@ function start(){
 
     if(check(d.board) && !ended){
       ended=true;
-
       play("winSound");
 
       let winner=d.turn==="X"?"O":"X";
       let name=d.players[winner];
 
-      if(name===user){
-        show("👑 You Win!");
-      }else{
-        show("🤡 You Lose!");
-      }
+      show(name===user?"👑 You Win!":"🤡 You Lose!");
     }
 
     if(d.board.every(x=>x!=="") && !ended){
@@ -189,7 +202,7 @@ function start(){
   });
 }
 
-/* DRAW BOARD */
+/* DRAW */
 function draw(b){
   let div=document.getElementById("board");
   div.innerHTML="";
@@ -205,7 +218,6 @@ function draw(b){
 
 /* MOVE */
 function move(i){
-
   if(ended) return;
 
   play("tapSound");
@@ -213,7 +225,6 @@ function move(i){
   let ref=db.ref("rooms/"+room);
 
   ref.once("value").then(s=>{
-
     let d=s.val();
     if(!d) return;
 
