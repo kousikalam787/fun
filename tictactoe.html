@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Multiplayer Tic Tac Toe</title>
+  <title>Tic Tac Toe Online</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body {
+    body{
       margin:0;
       font-family:Arial;
       background:#0f172a;
@@ -13,14 +13,14 @@
       text-align:center;
     }
 
-    input, button {
+    input,button{
       padding:10px;
       margin:5px;
       border:none;
       border-radius:5px;
     }
 
-    .board {
+    .board{
       display:grid;
       grid-template-columns:repeat(3,90px);
       gap:10px;
@@ -28,7 +28,7 @@
       margin-top:20px;
     }
 
-    .cell {
+    .cell{
       width:90px;
       height:90px;
       background:#1e293b;
@@ -40,14 +40,14 @@
       border-radius:10px;
     }
 
-    .chat {
+    .chat{
       margin-top:20px;
       max-width:300px;
       margin:auto;
       text-align:left;
     }
 
-    .messages {
+    .messages{
       height:150px;
       overflow:auto;
       background:#020617;
@@ -55,28 +55,24 @@
       border-radius:10px;
     }
 
-    #popup {
+    #popup{
       display:none;
       position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
+      top:0;left:0;
+      width:100%;height:100%;
       background:rgba(0,0,0,0.8);
       justify-content:center;
       align-items:center;
     }
 
-    .popup-box {
+    .popup-box{
       background:#1e293b;
       padding:20px;
       border-radius:10px;
       width:250px;
     }
 
-    .top {
-      margin-top:10px;
-    }
-
-    .leave {
+    .leave{
       background:red;
       color:white;
     }
@@ -87,13 +83,12 @@
 
 <h2>❌⭕ Tic Tac Toe Online</h2>
 
-<div class="top">
-  <input id="roomId" placeholder="Room Code">
-  <br>
-  <button onclick="createRoom()">Create Room</button>
-  <button onclick="joinRoom()">Join Room</button>
-  <button class="leave" onclick="leaveRoom()">Leave</button>
-</div>
+<input id="roomId" placeholder="Room Code">
+<br>
+
+<button onclick="createRoom()">Create Room</button>
+<button onclick="joinRoom()">Join Room</button>
+<button class="leave" onclick="leaveRoom()">Leave</button>
 
 <p id="status"></p>
 <p id="turn"></p>
@@ -124,68 +119,67 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
-  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
+const firebaseConfig={
+  apiKey:"AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
+  databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-let username = localStorage.getItem("user") || "Guest";
-let room = null;
-let player = null;
+let username=localStorage.getItem("user")||"Guest";
+let room=null;
+let player=null;
+let gameEnded=false;
 
-let gameRef = null;
-let chatRef = null;
-
-let gameEnded = false;
+let gameRef=null;
+let chatRef=null;
 
 /* SOUND */
 function play(id){
-  let s = document.getElementById(id);
+  let s=document.getElementById(id);
   if(s){
-    s.currentTime = 0;
+    s.currentTime=0;
     s.play().catch(()=>{});
   }
 }
 
 /* CREATE */
 function createRoom(){
-  room = Math.random().toString(36).substr(2,5);
-  player = "X";
+  room=Math.random().toString(36).substr(2,5);
+  player="X";
+  gameEnded=false;
 
-  let pass = prompt("Set Room Password:");
+  let pass=prompt("Set Password:");
 
-  let ref = db.ref("rooms/"+room);
-
-  ref.set({
+  db.ref("rooms/"+room).set({
     board:["","","","","","","","",""],
     turn:"X",
-    password: pass,
+    password:pass,
     players:{
-      X: username,
-      O: null
+      X:username,
+      O:""
     }
   });
 
-  ref.child("players/X").onDisconnect().remove();
+  db.ref("rooms/"+room+"/players/X").onDisconnect().remove();
 
-  document.getElementById("roomId").value = room;
-  document.getElementById("status").innerText = "Room Created (X)";
+  document.getElementById("roomId").value=room;
+  document.getElementById("status").innerText="Room Created";
 
   start();
 }
 
 /* JOIN */
 function joinRoom(){
-  room = document.getElementById("roomId").value.trim();
+  room=document.getElementById("roomId").value.trim();
   if(!room) return alert("Enter room code");
 
-  let pass = prompt("Password:");
-  player = "O";
+  let pass=prompt("Password:");
+  player="O";
+  gameEnded=false;
 
-  let ref = db.ref("rooms/"+room);
+  let ref=db.ref("rooms/"+room);
 
   ref.once("value").then(snap=>{
     if(!snap.exists()){
@@ -193,9 +187,9 @@ function joinRoom(){
       return;
     }
 
-    let data = snap.val();
+    let d=snap.val();
 
-    if(data.password !== pass){
+    if(d.password!==pass){
       alert("Wrong password");
       return;
     }
@@ -203,75 +197,70 @@ function joinRoom(){
     ref.child("players/O").set(username);
     ref.child("players/O").onDisconnect().remove();
 
-    document.getElementById("status").innerText = "Joined Room (O)";
+    document.getElementById("status").innerText="Joined Room";
 
     start();
   });
 }
 
-/* LISTENER */
+/* LISTENER FIX */
 function start(){
 
   if(gameRef) gameRef.off();
   if(chatRef) chatRef.off();
 
-  gameRef = db.ref("rooms/"+room);
-  chatRef = db.ref("rooms/"+room+"/chat");
+  gameRef=db.ref("rooms/"+room);
+  chatRef=db.ref("rooms/"+room+"/chat");
 
   gameRef.on("value", snap=>{
-    let data = snap.val();
-    if(!data) return;
+    let d=snap.val();
+    if(!d || !d.board) return;
 
-    draw(data.board);
+    draw(d.board);
 
-    let pX = data.players?.X || "Waiting";
-    let pO = data.players?.O || "Waiting";
+    let pX=d.players?.X||"Waiting";
+    let pO=d.players?.O||"Waiting";
 
-    let turnName = data.players?.[data.turn] || data.turn;
+    let turnName=d.players?.[d.turn]||d.turn;
 
-    document.getElementById("turn").innerText =
-      `X: ${pX} | O: ${pO} | Turn: ${turnName}`;
+    document.getElementById("turn").innerText=
+      `X:${pX} | O:${pO} | Turn:${turnName}`;
 
-    let win = check(data.board);
-    let draw = data.board.every(x=>x!=="")
+    let win=check(d.board);
+    let draw=d.board.every(x=>x!=="");
 
-    if((win || draw) && !gameEnded){
-      gameEnded = true;
-
+    if((win||draw)&&!gameEnded){
+      gameEnded=true;
       play("winSound");
 
       if(win){
-        let winnerSymbol = data.turn === "X" ? "O" : "X";
-        let winnerName = data.players[winnerSymbol];
+        let w=d.turn==="X"?"O":"X";
+        let name=d.players[w]||"Unknown";
 
-        if(winnerName === username){
-          show("🎉 You're Win!");
-        } else {
-          show("😔 You're Lost! Winner: " + winnerName);
-        }
+        show(name===username?"🎉 You're Win!":"😔 You're Lost! Winner: "+name);
       } else {
-        show("🤝 Game Draw!");
+        show("🤝 Draw!");
       }
     }
   });
 
   chatRef.on("child_added", s=>{
-    let d = s.val();
-    document.getElementById("messages").innerHTML +=
-      `<p><b>${d.user}:</b> ${d.msg}</p>`;
+    let d=s.val();
+    document.getElementById("messages").innerHTML+=
+      `<p><b>${d.user}:</b>${d.msg}</p>`;
   });
 }
 
 /* BOARD */
 function draw(b){
-  let d=document.getElementById("board");
-  d.innerHTML="";
+  let div=document.getElementById("board");
+  div.innerHTML="";
   b.forEach((v,i)=>{
     let c=document.createElement("div");
     c.className="cell";
     c.innerText=v;
     c.onclick=()=>move(i);
-    d.appendChild(c);
+    div.appendChild(c);
   });
 }
 
@@ -284,29 +273,29 @@ function move(i){
   let ref=db.ref("rooms/"+room);
 
   ref.once("value").then(snap=>{
-    let data=snap.val();
-    if(!data) return;
+    let d=snap.val();
+    if(!d) return;
 
-    if(data.board[i]!=="" || data.turn!==player) return;
+    if(d.board[i]!==""||d.turn!==player) return;
 
-    data.board[i]=player;
-    data.turn = player==="X"?"O":"X";
+    let b=[...d.board];
+    b[i]=player;
 
     ref.update({
-      board:data.board,
-      turn:data.turn
+      board:b,
+      turn:player==="X"?"O":"X"
     });
   });
 }
 
 /* WIN */
-function check(b=[]){
+function check(b){
   let p=[
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],
     [0,4,8],[2,4,6]
   ];
-  return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
+  return p.some(x=>x.every(i=>b[i]&&b[i]===b[x[0]]));
 }
 
 /* POPUP */
@@ -318,12 +307,10 @@ function show(t){
 /* REMATCH */
 function rematch(){
   gameEnded=false;
-
   db.ref("rooms/"+room).update({
     board:["","","","","","","","",""],
     turn:"X"
   });
-
   document.getElementById("popup").style.display="none";
 }
 
@@ -332,7 +319,7 @@ function restartGame(){
   location.reload();
 }
 
-/* LEAVE */
+/* LEAVE FIX */
 function leaveRoom(){
   if(room){
     db.ref("rooms/"+room+"/players/"+player).remove();
