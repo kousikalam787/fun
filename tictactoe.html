@@ -1,121 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tic Tac Toe Online FIXED</title>
+  <title>Tic Tac Toe FIXED PRO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body{
-      margin:0;
-      font-family:Arial;
-      background:#0f172a;
-      color:white;
-      text-align:center;
-    }
-
-    input,button{
-      padding:10px;
-      margin:5px;
-      border:none;
-      border-radius:5px;
-    }
-
-    .board{
-      display:grid;
-      grid-template-columns:repeat(3,90px);
-      gap:10px;
-      justify-content:center;
-      margin-top:20px;
-    }
-
-    .cell{
-      width:90px;
-      height:90px;
-      background:#1e293b;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:35px;
-      cursor:pointer;
-      border-radius:10px;
-    }
-
-    .chat{
-      margin-top:20px;
-      max-width:300px;
-      margin:auto;
-      text-align:left;
-    }
-
-    .messages{
-      height:150px;
-      overflow:auto;
-      background:#020617;
-      padding:10px;
-      border-radius:10px;
-    }
-
-    #popup{
-      display:none;
-      position:fixed;
-      top:0;left:0;
-      width:100%;height:100%;
-      background:rgba(0,0,0,0.8);
-      justify-content:center;
-      align-items:center;
-    }
-
-    .popup-box{
-      background:#1e293b;
-      padding:20px;
-      border-radius:10px;
-      width:250px;
-    }
-
-    .leave-btn{
-      background:red;
-      color:white;
-    }
+    body{margin:0;font-family:Arial;background:#0f172a;color:#fff;text-align:center}
+    input,button{padding:10px;margin:5px;border:none;border-radius:5px}
+    .board{display:grid;grid-template-columns:repeat(3,90px);gap:10px;justify-content:center;margin-top:20px}
+    .cell{width:90px;height:90px;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:35px;cursor:pointer;border-radius:10px}
+    .chat{margin-top:20px;max-width:300px;margin:auto;text-align:left}
+    .messages{height:150px;overflow:auto;background:#020617;padding:10px;border-radius:10px}
+    #popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);justify-content:center;align-items:center}
+    .box{background:#1e293b;padding:20px;border-radius:10px;width:250px}
+    .leave{background:red;color:white}
   </style>
 </head>
 
 <body>
 
-<h2>❌⭕ Tic Tac Toe FIXED</h2>
+<h2>❌⭕ Tic Tac Toe PRO FIX</h2>
 
 <input id="roomId" placeholder="Room Code">
 <br>
 
-<button onclick="createRoom()">Create Room</button>
-<button onclick="joinRoom()">Join Room</button>
-<button class="leave-btn" onclick="leaveRoom()">Leave</button>
+<button onclick="createRoom()">Create</button>
+<button onclick="joinRoom()">Join</button>
+<button class="leave" onclick="leaveRoom()">Leave</button>
 
 <p id="status">Not Connected</p>
 <p id="turn"></p>
 
-<div id="board" class="board"></div>
+<div class="board" id="board"></div>
 
-<!-- CHAT -->
 <div class="chat">
   <div class="messages" id="messages"></div>
-  <input id="msg" placeholder="Message">
+  <input id="msg">
   <button onclick="sendMsg()">Send</button>
 </div>
 
-<!-- POPUP -->
 <div id="popup">
-  <div class="popup-box">
+  <div class="box">
     <h2 id="winText"></h2>
     <button onclick="rematch()">Rematch</button>
     <button onclick="restartGame()">Restart</button>
   </div>
 </div>
 
+<audio id="winSound" src="win.mp3"></audio>
+<audio id="tapSound" src="tap.mp3"></audio>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 <script>
-
 const firebaseConfig={
   apiKey:"AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
   databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -128,17 +66,23 @@ let user=localStorage.getItem("user")||"Guest";
 
 let room=null;
 let player=null;
+let ended=false;
+
 let gameRef=null;
 let chatRef=null;
-let gameEnded=false;
 
-/* ================= START SAFE ================= */
-function startGame(){
+/* SAFE ROOM FIX */
+function normalizeRoom(data){
+  if(!data.board) data.board=["","","","","","","","",""];
+  if(!data.players) data.players={X:"",O:""};
+  if(!data.turn) data.turn="X";
+  return data;
+}
 
-  if(!room){
-    console.log("No room");
-    return;
-  }
+/* START */
+function start(){
+
+  if(!room) return;
 
   if(gameRef) gameRef.off();
   if(chatRef) chatRef.off();
@@ -146,57 +90,51 @@ function startGame(){
   gameRef=db.ref("rooms/"+room);
   chatRef=db.ref("rooms/"+room+"/chat");
 
-  /* GAME LISTENER */
   gameRef.on("value",snap=>{
 
-    let d=snap.val();
-
-    if(!d || !d.board){
-      document.getElementById("status").innerText="Room error";
-      return;
-    }
+    let d=normalizeRoom(snap.val()||{});
 
     draw(d.board);
 
-    let pX=d.players?.X||"Waiting";
-    let pO=d.players?.O||"Waiting";
-
-    let turnName=d.players?.[d.turn]||"";
+    let pX=d.players.X||"Waiting";
+    let pO=d.players.O||"Waiting";
 
     document.getElementById("turn").innerText=
-      "X:"+pX+" | O:"+pO+" | Turn:"+turnName;
+      `X:${pX} | O:${pO} | Turn:${d.turn}`;
 
-    let win=checkWin(d.board);
+    let win=check(d.board);
     let draw=d.board.every(x=>x!=="");
 
-    if((win||draw)&&!gameEnded){
-      gameEnded=true;
+    if((win||draw)&&!ended){
+      ended=true;
 
-      let winner=d.turn==="X"?"O":"X";
-      let name=d.players[winner];
+      play("winSound");
 
-      showPopup(win ?
-        (name===user?"🎉 You Win!":"😔 You Lost! Winner: "+name)
-        :
-        "🤝 Draw!");
+      if(win){
+        let w=d.turn==="X"?"O":"X";
+        let name=d.players[w];
+
+        show(name===user?"🎉 You Win!":"😔 You Lost! Winner: "+name);
+      } else {
+        show("🤝 Draw!");
+      }
     }
   });
 
-  /* CHAT */
   chatRef.on("child_added",s=>{
     let d=s.val();
-    let box=document.getElementById("messages");
-    box.innerHTML+=`<p><b>${d.user}:</b> ${d.msg}</p>`;
-    box.scrollTop=box.scrollHeight;
+    if(!d) return;
+    document.getElementById("messages").innerHTML+=
+      `<p><b>${d.user}:</b> ${d.msg}</p>`;
   });
 }
 
-/* ================= CREATE ================= */
+/* CREATE */
 function createRoom(){
 
   room=Math.random().toString(36).substr(2,5);
   player="X";
-  gameEnded=false;
+  ended=false;
 
   let pass=prompt("Password:");
 
@@ -204,21 +142,17 @@ function createRoom(){
     board:["","","","","","","","",""],
     turn:"X",
     password:pass,
-    players:{
-      X:user,
-      O:""
-    }
+    players:{X:user,O:""}
   });
 
   db.ref("rooms/"+room+"/players/X").onDisconnect().remove();
 
-  document.getElementById("roomId").value=room;
-  document.getElementById("status").innerText="Room Created";
+  document.getElementById("status").innerText="Created "+room;
 
-  startGame();
+  start();
 }
 
-/* ================= JOIN ================= */
+/* JOIN (FIXED SAFE LOAD) */
 function joinRoom(){
 
   room=document.getElementById("roomId").value.trim();
@@ -226,34 +160,32 @@ function joinRoom(){
 
   let pass=prompt("Password:");
   player="O";
-  gameEnded=false;
+  ended=false;
 
-  let ref=db.ref("rooms/"+room);
+  db.ref("rooms/"+room).once("value").then(s=>{
 
-  ref.once("value").then(snap=>{
-
-    if(!snap.exists()){
+    if(!s.exists()){
       alert("Room not found");
       return;
     }
 
-    let d=snap.val();
+    let d=normalizeRoom(s.val());
 
     if(d.password!==pass){
       alert("Wrong password");
       return;
     }
 
-    ref.child("players/O").set(user);
-    ref.child("players/O").onDisconnect().remove();
+    db.ref("rooms/"+room+"/players/O").set(user);
+    db.ref("rooms/"+room+"/players/O").onDisconnect().remove();
 
-    document.getElementById("status").innerText="Joined Room";
+    document.getElementById("status").innerText="Joined "+room;
 
-    startGame();
+    start();
   });
 }
 
-/* ================= DRAW ================= */
+/* DRAW */
 function draw(b){
   let div=document.getElementById("board");
   div.innerHTML="";
@@ -267,19 +199,20 @@ function draw(b){
   });
 }
 
-/* ================= MOVE ================= */
+/* MOVE */
 function move(i){
 
-  if(gameEnded) return;
+  if(ended) return;
+
+  play("tapSound");
 
   let ref=db.ref("rooms/"+room);
 
-  ref.once("value").then(snap=>{
+  ref.once("value").then(s=>{
 
-    let d=snap.val();
-    if(!d) return;
+    let d=normalizeRoom(s.val()||{});
 
-    if(d.board[i]!==""||d.turn!==player) return;
+    if(d.board[i]||d.turn!==player) return;
 
     let b=[...d.board];
     b[i]=player;
@@ -291,8 +224,8 @@ function move(i){
   });
 }
 
-/* ================= WIN ================= */
-function checkWin(b){
+/* WIN */
+function check(b){
   let p=[
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],
@@ -301,15 +234,15 @@ function checkWin(b){
   return p.some(x=>x.every(i=>b[i]&&b[i]===b[x[0]]));
 }
 
-/* ================= POPUP ================= */
-function showPopup(t){
+/* POPUP */
+function show(t){
   document.getElementById("winText").innerText=t;
   document.getElementById("popup").style.display="flex";
 }
 
-/* ================= REMATCH ================= */
+/* REMATCH */
 function rematch(){
-  gameEnded=false;
+  ended=false;
 
   db.ref("rooms/"+room).update({
     board:["","","","","","","","",""],
@@ -319,35 +252,38 @@ function rematch(){
   document.getElementById("popup").style.display="none";
 }
 
-/* ================= RESTART ================= */
+/* RESTART */
 function restartGame(){
   location.reload();
 }
 
-/* ================= LEAVE FIX ================= */
+/* LEAVE */
 function leaveRoom(){
-
   if(room){
     db.ref("rooms/"+room+"/players/"+player).remove();
   }
-
   location.reload();
 }
 
-/* ================= CHAT ================= */
+/* CHAT */
 function sendMsg(){
-
   if(!room) return;
 
-  let msg=document.getElementById("msg").value;
-  if(!msg) return;
+  let m=document.getElementById("msg").value;
+  if(!m) return;
 
   db.ref("rooms/"+room+"/chat").push({
     user:user,
-    msg:msg
+    msg:m
   });
 
   document.getElementById("msg").value="";
+}
+
+/* SOUND */
+function play(id){
+  let a=document.getElementById(id);
+  if(a){a.currentTime=0;a.play().catch(()=>{});}
 }
 
 </script>
