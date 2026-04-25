@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ludo Lite Online</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial;
+      background:#0f172a;
+      color:white;
+      text-align:center;
+    }
+
+    input,button{
+      padding:10px;
+      margin:5px;
+      border:none;
+      border-radius:5px;
+    }
+
+    .board{
+      display:grid;
+      grid-template-columns:repeat(5,60px);
+      gap:5px;
+      justify-content:center;
+      margin-top:20px;
+    }
+
+    .cell{
+      width:60px;
+      height:60px;
+      background:#1e293b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:5px;
+      font-size:14px;
+    }
+
+    #popup{
+      display:none;
+      position:fixed;
+      top:0;left:0;
+      width:100%;height:100%;
+      background:rgba(0,0,0,0.8);
+      justify-content:center;
+      align-items:center;
+    }
+
+    .box{
+      background:#1e293b;
+      padding:20px;
+      border-radius:10px;
+      width:250px;
+    }
+
+    #dice{
+      font-size:30px;
+      margin:10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>🎲 Ludo Lite Online</h2>
+
+<input id="room" placeholder="Room Code">
+<br>
+
+<button onclick="create()">Create</button>
+<button onclick="join()">Join</button>
+
+<p id="info"></p>
+<p id="turn"></p>
+
+<button onclick="roll()">🎲 Roll Dice</button>
+<h2 id="dice">0</h2>
+
+<div class="board" id="board"></div>
+
+<!-- POPUP -->
+<div id="popup">
+  <div class="box">
+    <h2 id="msg"></h2>
+    <button onclick="reset()">Rematch</button>
+    <button onclick="location.reload()">Restart</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
+<script>
+
+const firebaseConfig={
+  apiKey:"AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
+  databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+let user=localStorage.getItem("user")||"Player";
+let room=null;
+let me=null;
+let ended=false;
+
+/* CREATE */
+function create(){
+  room=Math.random().toString(36).substr(2,5);
+  me="A";
+  ended=false;
+
+  db.ref("ludo/"+room).set({
+    posA:0,
+    posB:0,
+    turn:"A",
+    players:{A:user,B:""}
+  });
+
+  document.getElementById("info").innerText="Room: "+room;
+  start();
+}
+
+/* JOIN */
+function join(){
+  room=document.getElementById("room").value.trim();
+  if(!room) return;
+
+  me="B";
+  ended=false;
+
+  db.ref("ludo/"+room+"/players/B").set(user);
+
+  document.getElementById("info").innerText="Joined Room";
+  start();
+}
+
+/* START */
+function start(){
+
+  db.ref("ludo/"+room).on("value",snap=>{
+
+    let d=snap.val();
+    if(!d) return;
+
+    draw(d.posA,d.posB);
+
+    document.getElementById("turn").innerText=
+      `Turn: ${d.turn}`;
+
+    if((d.posA>=24 || d.posB>=24) && !ended){
+      ended=true;
+
+      let winner=d.posA>=24?"A":"B";
+
+      show(winner===me?"👑 You Win!":"🤡 You Lose!");
+    }
+  });
+}
+
+/* DRAW BOARD */
+function draw(a,b){
+  let div=document.getElementById("board");
+  div.innerHTML="";
+
+  for(let i=0;i<25;i++){
+    let c=document.createElement("div");
+    c.className="cell";
+
+    if(i===a) c.innerText="A";
+    if(i===b) c.innerText="B";
+
+    div.appendChild(c);
+  }
+}
+
+/* DICE */
+function roll(){
+
+  let val=Math.floor(Math.random()*6)+1;
+  document.getElementById("dice").innerText=val;
+
+  let ref=db.ref("ludo/"+room);
+
+  ref.once("value").then(snap=>{
+
+    let d=snap.val();
+    if(!d || d.turn!==me) return;
+
+    if(me==="A"){
+      ref.update({
+        posA:d.posA+val,
+        turn:"B"
+      });
+    }else{
+      ref.update({
+        posB:d.posB+val,
+        turn:"A"
+      });
+    }
+  });
+}
+
+/* POPUP */
+function show(t){
+  document.getElementById("msg").innerText=t;
+  document.getElementById("popup").style.display="flex";
+}
+
+/* RESET */
+function reset(){
+  location.reload();
+}
+
+</script>
+
+</body>
+</html>
