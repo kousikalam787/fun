@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Snake PRO FIXED</title>
+  <title>Snake Game FIX BUTTON ONLY</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -39,36 +39,30 @@
       border-radius:6px;
       background:#22c55e;
       color:white;
-
-      /* 🔥 FIX BUTTON ISSUE */
+      cursor:pointer;
       position:relative;
       z-index:100;
-      pointer-events:auto;
       touch-action:manipulation;
     }
 
-    button:active{transform:scale(0.95);}
-
-    /* CONTROLS FIX */
     .controls{
+      margin-top:10px;
       position:relative;
       z-index:100;
-      touch-action:none;
-      user-select:none;
     }
 
     .controls button{
       width:60px;
       height:60px;
+      font-size:20px;
       background:#1e293b;
-      z-index:100;
+      color:white;
     }
 
     .controls button:active{
       background:#22c55e;
     }
 
-    /* START */
     #startScreen{
       position:fixed;
       inset:0;
@@ -80,7 +74,6 @@
       z-index:9999;
     }
 
-    /* GAME OVER */
     #gameOver{
       display:none;
       position:fixed;
@@ -144,7 +137,7 @@
   </div>
 </div>
 
-<h2>🐍 Snake PRO</h2>
+<h2>🐍 Snake Game (BUTTON ONLY FIX)</h2>
 <div class="score">Score: <span id="score">0</span></div>
 
 <canvas id="game" width="300" height="300"></canvas>
@@ -152,7 +145,7 @@
 <button onclick="restart()">Restart</button>
 
 <div id="startScreen">
-  <h2>Tap to Start</h2>
+  <h2>Tap Play</h2>
   <button onclick="start()">PLAY</button>
 </div>
 
@@ -162,12 +155,12 @@
   <button onclick="restart()">Play Again</button>
 </div>
 
-<!-- CONTROLS -->
+<!-- ONLY BUTTONS -->
 <div class="controls">
-  <button ontouchstart="dir('up')" onclick="dir('up')">⬆️</button><br>
-  <button ontouchstart="dir('left')" onclick="dir('left')">⬅️</button>
-  <button ontouchstart="dir('down')" onclick="dir('down')">⬇️</button>
-  <button ontouchstart="dir('right')" onclick="dir('right')">➡️</button>
+  <button onclick="setDir('up')">⬆️</button><br>
+  <button onclick="setDir('left')">⬅️</button>
+  <button onclick="setDir('down')">⬇️</button>
+  <button onclick="setDir('right')">➡️</button>
 </div>
 
 <script>
@@ -228,6 +221,7 @@ function random(){
 
 /* LOOP */
 function loop(){
+
   ctx.clearRect(0,0,300,300);
 
   snake.forEach((s,i)=>{
@@ -235,15 +229,12 @@ function loop(){
     ctx.fillRect(s.x,s.y,box,box);
   });
 
-  /* APPLE GLOW */
+  /* 🍎 GLOW */
   if(apple.complete){
     ctx.shadowColor="red";
     ctx.shadowBlur=12;
     ctx.drawImage(apple,food.x+2,food.y+2,box-4,box-4);
     ctx.shadowBlur=0;
-  }else{
-    ctx.fillStyle="red";
-    ctx.fillRect(food.x,food.y,box,box);
   }
 
   let x=snake[0].x;
@@ -268,33 +259,13 @@ function loop(){
   snake.unshift({x,y});
 }
 
-/* 🔥 FIXED BUTTON + SWIPE */
-function dir(x){
-  if(x==="left" && d!=="RIGHT") d="LEFT";
-  if(x==="right" && d!=="LEFT") d="RIGHT";
-  if(x==="up" && d!=="DOWN") d="UP";
-  if(x==="down" && d!=="UP") d="DOWN";
+/* 🔥 ONLY BUTTON CONTROL */
+function setDir(dir){
+  if(dir==="left" && d!=="RIGHT") d="LEFT";
+  if(dir==="right" && d!=="LEFT") d="RIGHT";
+  if(dir==="up" && d!=="DOWN") d="UP";
+  if(dir==="down" && d!=="UP") d="DOWN";
 }
-
-/* SWIPE */
-let sx,sy;
-document.addEventListener("touchstart",e=>{
-  sx=e.touches[0].clientX;
-  sy=e.touches[0].clientY;
-});
-
-document.addEventListener("touchend",e=>{
-  let dx=e.changedTouches[0].clientX-sx;
-  let dy=e.changedTouches[0].clientY-sy;
-
-  if(Math.abs(dx)>Math.abs(dy)){
-    if(dx>0)dir("right");
-    else dir("left");
-  }else{
-    if(dy>0)dir("down");
-    else dir("up");
-  }
-});
 
 /* COLLISION */
 function hit(x,y){
