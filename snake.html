@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Snake Game PRO</title>
+  <title>Snake Game PRO FIX</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -25,6 +25,9 @@
       margin-top:15px;
       border-radius:12px;
       background:url('box.jpg') center/cover;
+      display:block;
+      margin-left:auto;
+      margin-right:auto;
     }
 
     .score{
@@ -38,6 +41,23 @@
       border-radius:6px;
       background:#22c55e;
       color:white;
+      cursor:pointer;
+
+      /* 🔥 FIX BUTTON CLICK ISSUE */
+      position:relative;
+      z-index:50;
+      touch-action:manipulation;
+    }
+
+    button:active{
+      transform:scale(0.95);
+    }
+
+    .controls{
+      margin-top:10px;
+      position:relative;
+      z-index:50;
+      touch-action:none;
     }
 
     .controls button{
@@ -46,12 +66,14 @@
       font-size:20px;
       background:#1e293b;
       color:white;
+      z-index:50;
     }
 
     .controls button:active{
       background:#22c55e;
     }
 
+    /* START SCREEN FIX */
     #startScreen{
       position:fixed;
       inset:0;
@@ -78,7 +100,7 @@
 
 <body>
 
-<h2>🐍 Snake Game PRO</h2>
+<h2>🐍 Snake Game PRO FIX</h2>
 <div class="score">Score: <span id="score">0</span></div>
 
 <canvas id="game" width="300" height="300"></canvas>
@@ -98,10 +120,10 @@
 </div>
 
 <div class="controls">
-  <button onclick="dir('up')">⬆️</button><br>
-  <button onclick="dir('left')">⬅️</button>
-  <button onclick="dir('down')">⬇️</button>
-  <button onclick="dir('right')">➡️</button>
+  <button ontouchstart="dir('up')" onclick="dir('up')">⬆️</button><br>
+  <button ontouchstart="dir('left')" onclick="dir('left')">⬅️</button>
+  <button ontouchstart="dir('down')" onclick="dir('down')">⬇️</button>
+  <button ontouchstart="dir('right')" onclick="dir('right')">➡️</button>
 </div>
 
 <script>
@@ -155,15 +177,24 @@ function loop(){
     ctx.fillRect(s.x,s.y,box,box);
   });
 
-  /* 🍎 FIXED SMALL APPLE (IMPORTANT PART) */
+  /* 🍎 GLOW APPLE FIX */
   if(apple.complete){
+
+    // glow effect
+    ctx.shadowColor="red";
+    ctx.shadowBlur=15;
+
     ctx.drawImage(
       apple,
-      food.x+2,   // center fix
+      food.x+2,
       food.y+2,
-      box-4,      // small fit
+      box-4,
       box-4
     );
+
+    // reset glow
+    ctx.shadowBlur=0;
+
   }else{
     ctx.fillStyle="red";
     ctx.fillRect(food.x,food.y,box,box);
@@ -191,7 +222,7 @@ function loop(){
   snake.unshift({x,y});
 }
 
-/* CONTROL */
+/* CONTROL FIX */
 function dir(x){
   if(x==="left" && d!=="RIGHT") d="LEFT";
   if(x==="right" && d!=="LEFT") d="RIGHT";
