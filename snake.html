@@ -45,7 +45,27 @@
       cursor:pointer;
     }
 
-    /* GAME OVER SCREEN */
+    /* 🎮 MOBILE CONTROLS */
+    .controls {
+      margin-top:20px;
+    }
+
+    .controls button {
+      width:60px;
+      height:60px;
+      margin:5px;
+      font-size:20px;
+      border:none;
+      border-radius:10px;
+      background:#1e293b;
+      color:white;
+    }
+
+    .controls button:active {
+      background:#22c55e;
+    }
+
+    /* GAME OVER */
     #gameOver {
       display:none;
       position:fixed;
@@ -58,11 +78,6 @@
       justify-content:center;
       flex-direction:column;
       z-index:1000;
-    }
-
-    #leaderboard {
-      margin-top:20px;
-      text-align:left;
     }
   </style>
 </head>
@@ -79,12 +94,20 @@
 <br>
 <button onclick="startGame()">Restart</button>
 
+<!-- 🎮 CONTROLS -->
+<div class="controls">
+  <button onclick="setDir('up')">⬆️</button><br>
+  <button onclick="setDir('left')">⬅️</button>
+  <button onclick="setDir('down')">⬇️</button>
+  <button onclick="setDir('right')">➡️</button>
+</div>
+
 <!-- GAME OVER -->
 <div id="gameOver">
   <h2>Game Over 💀</h2>
   <p>Your Score: <span id="finalScore"></span></p>
 
-  <h3>🏆 Top Players</h3>
+  <h3>🏆 Leaderboard</h3>
   <div id="leaderboard"></div>
 
   <button onclick="restart()">Play Again</button>
@@ -101,9 +124,7 @@
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
-  authDomain: "kousik-game.firebaseapp.com",
-  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kousik-game"
+  databaseURL: "https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -143,11 +164,13 @@ function draw(){
   ctx.fillStyle="#020617";
   ctx.fillRect(0,0,300,300);
 
+  // snake
   for(let i=0;i<snake.length;i++){
     ctx.fillStyle = i===0 ? "#22c55e" : "#4ade80";
     ctx.fillRect(snake[i].x,snake[i].y,box,box);
   }
 
+  // food
   ctx.fillStyle="red";
   ctx.fillRect(food.x,food.y,box,box);
 
@@ -159,11 +182,13 @@ function draw(){
   if(direction==="UP") headY-=box;
   if(direction==="DOWN") headY+=box;
 
+  // collision
   if(headX<0 || headY<0 || headX>=300 || headY>=300 || selfCollision(headX,headY)){
     gameOver();
     return;
   }
 
+  // eat
   if(headX===food.x && headY===food.y){
     score++;
     document.getElementById("score").innerText = score;
@@ -184,6 +209,22 @@ function selfCollision(x,y){
   }
   return false;
 }
+
+// 🎮 BUTTON CONTROL
+function setDir(dir){
+  if(dir==="left" && direction!=="RIGHT") direction="LEFT";
+  if(dir==="up" && direction!=="DOWN") direction="UP";
+  if(dir==="right" && direction!=="LEFT") direction="RIGHT";
+  if(dir==="down" && direction!=="UP") direction="DOWN";
+}
+
+// ⌨️ KEYBOARD
+document.addEventListener("keydown", e=>{
+  if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT";
+  if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP";
+  if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";
+  if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN";
+});
 
 // GAME OVER
 function gameOver(){
@@ -207,7 +248,7 @@ function saveScore(){
 // LOAD LEADERBOARD
 function loadLeaderboard(){
   db.ref("scores").once("value", snapshot=>{
-    let data = [];
+    let data=[];
     snapshot.forEach(child=>{
       data.push({
         user: child.key,
@@ -225,14 +266,6 @@ function loadLeaderboard(){
     document.getElementById("leaderboard").innerHTML = html;
   });
 }
-
-// CONTROLS
-document.addEventListener("keydown", e=>{
-  if(e.key==="ArrowLeft" && direction!=="RIGHT") direction="LEFT";
-  if(e.key==="ArrowUp" && direction!=="DOWN") direction="UP";
-  if(e.key==="ArrowRight" && direction!=="LEFT") direction="RIGHT";
-  if(e.key==="ArrowDown" && direction!=="UP") direction="DOWN";
-});
 
 function restart(){
   startGame();
