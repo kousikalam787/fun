@@ -13,14 +13,6 @@
       background:url('bgl.jpg') center/cover no-repeat fixed;
     }
 
-    body::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.6);
-      z-index:-1;
-    }
-
     .board{
       display:grid;
       grid-template-columns:repeat(3,100px);
@@ -44,18 +36,6 @@
       cursor:pointer;
     }
 
-    #countPopup{
-      display:none;
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.85);
-      justify-content:center;
-      align-items:center;
-      font-size:70px;
-      color:#22c55e;
-      z-index:999;
-    }
-
     #popup{
       display:none;
       position:fixed;
@@ -69,13 +49,23 @@
       width:280px;
       height:220px;
       background-size:cover;
-      background-position:center;
       display:flex;
       flex-direction:column;
       justify-content:flex-end;
       align-items:center;
       padding:20px;
       border-radius:15px;
+    }
+
+    #countPopup{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.85);
+      justify-content:center;
+      align-items:center;
+      font-size:70px;
+      color:#22c55e;
     }
 
     /* CHAT */
@@ -120,6 +110,7 @@
 <p id="turn"></p>
 
 <div class="board" id="board"></div>
+
 <div id="countPopup"></div>
 
 <div id="popup">
@@ -135,7 +126,6 @@
   <button onclick="sendMsg()">Send</button>
 </div>
 
-<!-- SOUND -->
 <audio id="tapSound" src="tap.mp3"></audio>
 <audio id="winSound" src="win.mp3"></audio>
 <audio id="countSound" src="countdown.mp3"></audio>
@@ -155,11 +145,13 @@ const db=firebase.database();
 
 let user=localStorage.getItem("user")||"Player";
 let room, me;
+let ended=false;
 
 /* CREATE */
 function create(){
   room=Math.random().toString(36).substr(2,5);
   me="X";
+  ended=false;
 
   db.ref("rooms/"+room).set({
     board:["","","","","","","","",""],
@@ -183,43 +175,46 @@ function join(){
     started:true
   });
 
-  document.getElementById("info").innerText="Joined Room";
   start();
   loadChat();
 }
 
-/* GAME SYNC */
+/* START */
 function start(){
-
   db.ref("rooms/"+room).on("value",snap=>{
-
     let d=snap.val();
     if(!d) return;
 
     draw(d.board);
     document.getElementById("turn").innerText="Turn: "+d.turn;
 
-    /* 🔥 START COUNTDOWN ONLY WHEN BOTH JOIN */
-    if(d.started && !window.startedOnce){
-      window.startedOnce=true;
-      runCountdown();
+    if(d.started && !window.countStarted){
+      window.countStarted=true;
+      countdown();
     }
 
-    /* WIN */
-    if(check(d.board)){
-      let winner=d.turn==="X"?"O":"X";
+    if(check(d.board) && !ended){
+      ended=true;
       document.getElementById("winSound").play();
 
-      if(winner===me) show("👑 You Win!","win.jpg");
-      else show("🤡 You Lose!","lose.jpg");
+      let winner=d.turn==="X"?"O":"X";
+
+      if(winner===me){
+        show("👑 You Win!","win.jpg");
+      }else{
+        show("🤡 You Lose!","lose.jpg");
+      }
     }
 
+    if(d.board.every(x=>x!=="") && !ended){
+      ended=true;
+      show("🤝 Draw!","");
+    }
   });
 }
 
 /* COUNTDOWN */
-function runCountdown(){
-
+function countdown(){
   let p=document.getElementById("countPopup");
   p.style.display="flex";
 
@@ -233,9 +228,7 @@ function runCountdown(){
     if(c<0){
       clearInterval(i);
       p.innerText="GO!";
-      setTimeout(()=>{
-        p.style.display="none";
-      },500);
+      setTimeout(()=>p.style.display="none",500);
     }
 
   },1000);
@@ -243,6 +236,7 @@ function runCountdown(){
 
 /* MOVE */
 function move(i){
+  if(ended) return;
 
   let ref=db.ref("rooms/"+room);
 
@@ -279,20 +273,27 @@ function draw(b){
 
 /* CHECK */
 function check(b){
-  let p=[[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6]];
-  return p.some(x=>x.every(i=>b[i]&&b[i]===b[x[0]]));
+  let p=[
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  return p.some(x=>x.every(i=>b[i] && b[i]===b[x[0]]));
 }
 
 /* RESULT */
 function show(text,bg){
   document.getElementById("msg").innerText=text;
-  document.getElementById("resultBox").style.backgroundImage=`url('${bg}')`;
+  if(bg){
+    document.getElementById("resultBox").style.backgroundImage=`url('${bg}')`;
+  }
   document.getElementById("popup").style.display="flex";
 }
 
 /* RESET */
 function reset(){
-  window.startedOnce=false;
+  ended=false;
+  window.countStarted=false;
 
   db.ref("rooms/"+room).update({
     board:["","","","","","","","",""],
@@ -309,11 +310,7 @@ function sendMsg(){
   let i=document.getElementById("msgInput");
   if(!i.value.trim()) return;
 
-  db.ref("chats/"+room).push({
-    user:user,
-    msg:i.value
-  });
-
+  db.ref("chats/"+room).push({user:user,msg:i.value});
   i.value="";
 }
 
