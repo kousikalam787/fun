@@ -45,12 +45,12 @@
     }
 
     #countPopup{
+      display:none;
       position:fixed;
       inset:0;
-      display:none;
+      background:rgba(0,0,0,0.85);
       justify-content:center;
       align-items:center;
-      background:rgba(0,0,0,0.85);
       font-size:70px;
       color:#22c55e;
       z-index:999;
@@ -69,6 +69,7 @@
       width:280px;
       height:220px;
       background-size:cover;
+      background-position:center;
       display:flex;
       flex-direction:column;
       justify-content:flex-end;
@@ -134,12 +135,18 @@
   <button onclick="sendMsg()">Send</button>
 </div>
 
+<!-- SOUND -->
+<audio id="tapSound" src="tap.mp3"></audio>
+<audio id="winSound" src="win.mp3"></audio>
+<audio id="countSound" src="countdown.mp3"></audio>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 <script>
+
 const firebaseConfig={
-  apiKey:"AIza...",
+  apiKey:"AIzaSy...",
   databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
@@ -158,8 +165,7 @@ function create(){
     board:["","","","","","","","",""],
     turn:"X",
     players:{X:user,O:""},
-    countdown:3,
-    gameStarted:false
+    started:false
   });
 
   document.getElementById("info").innerText="Room: "+room;
@@ -173,66 +179,80 @@ function join(){
   me="O";
 
   db.ref("rooms/"+room).update({
-    "players/O":user
+    "players/O":user,
+    started:true
   });
 
+  document.getElementById("info").innerText="Joined Room";
   start();
   loadChat();
 }
 
-/* SYNC GAME */
+/* GAME SYNC */
 function start(){
+
   db.ref("rooms/"+room).on("value",snap=>{
+
     let d=snap.val();
     if(!d) return;
 
     draw(d.board);
     document.getElementById("turn").innerText="Turn: "+d.turn;
 
-    /* 🔥 SYNC COUNTDOWN */
-    if(!d.gameStarted){
-      showCountdown(d.countdown);
-
-      if(me==="X"){
-        setTimeout(()=>{
-          db.ref("rooms/"+room).update({
-            countdown:d.countdown-1
-          });
-        },1000);
-      }
-
-      if(d.countdown<=0){
-        db.ref("rooms/"+room).update({gameStarted:true});
-      }
-    }else{
-      document.getElementById("countPopup").style.display="none";
+    /* 🔥 START COUNTDOWN ONLY WHEN BOTH JOIN */
+    if(d.started && !window.startedOnce){
+      window.startedOnce=true;
+      runCountdown();
     }
 
     /* WIN */
     if(check(d.board)){
       let winner=d.turn==="X"?"O":"X";
-      show(winner===me?"You Win":"You Lose");
+      document.getElementById("winSound").play();
+
+      if(winner===me) show("👑 You Win!","win.jpg");
+      else show("🤡 You Lose!","lose.jpg");
     }
 
   });
 }
 
-/* COUNTDOWN UI */
-function showCountdown(n){
+/* COUNTDOWN */
+function runCountdown(){
+
   let p=document.getElementById("countPopup");
   p.style.display="flex";
-  p.innerText=n>0?n:"GO";
+
+  let c=3;
+
+  let i=setInterval(()=>{
+    p.innerText=c;
+    document.getElementById("countSound").play();
+    c--;
+
+    if(c<0){
+      clearInterval(i);
+      p.innerText="GO!";
+      setTimeout(()=>{
+        p.style.display="none";
+      },500);
+    }
+
+  },1000);
 }
 
 /* MOVE */
 function move(i){
+
   let ref=db.ref("rooms/"+room);
 
   ref.once("value").then(s=>{
     let d=s.val();
 
-    if(!d.gameStarted) return;
+    if(!d.started) return;
     if(d.board[i]!=="" || d.turn!==me) return;
+
+    document.getElementById("tapSound").play();
 
     let b=[...d.board];
     b[i]=me;
@@ -264,35 +284,48 @@ function check(b){
 }
 
 /* RESULT */
-function show(t){
-  document.getElementById("msg").innerText=t;
+function show(text,bg){
+  document.getElementById("msg").innerText=text;
+  document.getElementById("resultBox").style.backgroundImage=`url('${bg}')`;
   document.getElementById("popup").style.display="flex";
 }
 
 /* RESET */
 function reset(){
+  window.startedOnce=false;
+
   db.ref("rooms/"+room).update({
     board:["","","","","","","","",""],
     turn:"X",
-    countdown:3,
-    gameStarted:false
+    started:true
   });
+
   clearChat();
+  document.getElementById("popup").style.display="none";
 }
 
 /* CHAT */
 function sendMsg(){
   let i=document.getElementById("msgInput");
-  db.ref("chats/"+room).push({user:user,msg:i.value});
+  if(!i.value.trim()) return;
+
+  db.ref("chats/"+room).push({
+    user:user,
+    msg:i.value
+  });
+
   i.value="";
 }
 
 function loadChat(){
+  db.ref("chats/"+room).off();
   db.ref("chats/"+room).on("child_added",snap=>{
     let d=snap.val();
+
     let div=document.createElement("div");
     div.className="bubble "+(d.user===user?"me":"other");
     div.innerText=d.msg;
+
     document.getElementById("messages").appendChild(div);
   });
 }
@@ -300,6 +333,7 @@ function loadChat(){
 function clearChat(){
   db.ref("chats/"+room).remove();
 }
+
 </script>
 
 </body>
