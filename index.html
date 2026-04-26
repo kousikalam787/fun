@@ -1,202 +1,161 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fun Zone - Play Free Games</title>
+  <title>Fun Zone - Play Games Online</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ✅ AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5985676857185797"
+    crossorigin="anonymous"></script>
 
   <style>
     body{
       margin:0;
       font-family:Arial;
       color:white;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+      overflow-x:hidden;
     }
 
-    /* VIDEO BG */
-    .video-bg{
+    /* 🎥 VIDEO BG */
+    video{
       position:fixed;
-      top:0;left:0;
-      width:100%;height:100%;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
       object-fit:cover;
-      z-index:-2;
-    }
-
-    body::after{
-      content:"";
-      position:fixed;
-      top:0;left:0;
-      width:100%;height:100%;
-      background:rgba(0,0,0,0.65);
       z-index:-1;
     }
 
-    /* NAV */
-    nav{
+    /* NAVBAR */
+    .nav{
       display:flex;
       justify-content:space-between;
-      align-items:center;
-      padding:12px 18px;
-      background:rgba(0,0,0,0.6);
-    }
-
-    nav h2{
-      margin:0;
-      color:#22c55e;
-      font-size:18px;
-    }
-
-    .nav-links a{
-      color:white;
-      text-decoration:none;
-      margin-left:12px;
-      font-size:14px;
-    }
-
-    /* 🔍 SEARCH BAR */
-    .search-box{
-      text-align:center;
       padding:15px;
+      background:rgba(0,0,0,0.6);
+      position:sticky;
+      top:0;
     }
 
-    .search-box input{
+    .nav a{
+      color:white;
+      margin:0 10px;
+      text-decoration:none;
+    }
+
+    /* SEARCH */
+    .search{
+      text-align:center;
+      margin:20px;
+    }
+
+    .search input{
+      padding:10px;
       width:80%;
       max-width:400px;
-      padding:10px;
-      border:none;
       border-radius:8px;
-      outline:none;
-      font-size:14px;
+      border:none;
     }
 
-    /* HERO */
-    .hero{
-      text-align:center;
-      padding:10px;
-    }
-
-    .hero h1{
-      margin:10px 0;
-    }
-
-    /* GRID */
-    .grid{
+    /* GAMES GRID */
+    .games{
       display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
       gap:15px;
       padding:20px;
-      flex:1;
     }
 
     .card{
-      background:rgba(31,41,55,0.85);
+      background:rgba(0,0,0,0.6);
       border-radius:15px;
       overflow:hidden;
+      text-align:center;
       cursor:pointer;
       transition:0.3s;
-      text-align:center;
     }
 
     .card:hover{
-      transform:translateY(-5px);
-      background:#22c55e;
-      color:black;
+      transform:scale(1.05);
     }
 
-    .thumb{
+    .card img{
       width:100%;
-      height:140px;
+      height:120px;
       object-fit:cover;
     }
 
-    .title{
+    .card p{
       padding:10px;
-      font-size:14px;
-      font-weight:bold;
     }
 
-    footer{
+    /* FOOTER */
+    .footer{
       text-align:center;
-      padding:15px;
+      padding:20px;
       background:rgba(0,0,0,0.7);
-      font-size:12px;
+      margin-top:20px;
     }
   </style>
 </head>
 
 <body>
 
-<!-- VIDEO -->
-<video class="video-bg" autoplay muted loop playsinline>
+<!-- 🎥 Background Video -->
+<video autoplay muted loop>
   <source src="bg.mp4" type="video/mp4">
 </video>
 
 <!-- NAV -->
-<nav>
-  <h2>🎮 Fun Zone</h2>
-  <div class="nav-links">
+<div class="nav">
+  <div>🎮 Fun Zone</div>
+  <div>
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
-    <a href="privacy.html">Policy</a>
     <a href="contact.html">Contact</a>
+    <a href="privacy.html">Privacy</a>
   </div>
-</nav>
-
-<!-- HERO -->
-<div class="hero">
-  <h1>Play Free Online Games</h1>
 </div>
 
-<!-- 🔍 SEARCH -->
-<div class="search-box">
-  <input type="text" id="search" placeholder="Search games... (snake, ludo, tic tac toe)">
+<!-- SEARCH -->
+<div class="search">
+  <input type="text" id="search" placeholder="Search games..." onkeyup="searchGame()">
 </div>
 
 <!-- GAMES -->
-<div class="grid" id="gameGrid">
+<div class="games" id="games">
 
-  <div class="card" data-name="snake" onclick="openGame('snake.html')">
-    <img src="snake.jpg" class="thumb">
-    <div class="title">🐍 Snake Game</div>
+  <div class="card" data-name="tic tac toe" onclick="location.href='tic.html'">
+    <img src="tic.jpg">
+    <p>Tic Tac Toe</p>
   </div>
 
-  <div class="card" data-name="tictactoe tic tac toe" onclick="openGame('tictactoe.html')">
-    <img src="tictactoe.jpg" class="thumb">
-    <div class="title">❌⭕ Tic Tac Toe</div>
+  <div class="card" data-name="snake" onclick="location.href='snake.html'">
+    <img src="snake.jpg">
+    <p>Snake Pro</p>
   </div>
 
-  <div class="card" data-name="ludo dice" onclick="openGame('ludo.html')">
-    <img src="ludo.jpg" class="thumb">
-    <div class="title">🎲 Ludo Lite</div>
+  <div class="card" data-name="ludo" onclick="location.href='ludo.html'">
+    <img src="ludo.jpg">
+    <p>Ludo</p>
   </div>
 
 </div>
 
 <!-- FOOTER -->
-<footer>
+<div class="footer">
   © 2026 Fun Zone | All Rights Reserved
-</footer>
+</div>
 
 <script>
-function openGame(g){
-  window.location.href=g;
-}
-
-/* 🔍 SEARCH FUNCTION */
-document.getElementById("search").addEventListener("input", function(){
-  let value = this.value.toLowerCase();
-  let cards = document.querySelectorAll(".card");
+function searchGame(){
+  let input=document.getElementById("search").value.toLowerCase();
+  let cards=document.querySelectorAll(".card");
 
   cards.forEach(card=>{
-    let name = card.getAttribute("data-name");
-    if(name.includes(value)){
-      card.style.display="block";
-    }else{
-      card.style.display="none";
-    }
+    let name=card.getAttribute("data-name");
+    card.style.display=name.includes(input) ? "block" : "none";
   });
-});
+}
 </script>
 
 </body>
