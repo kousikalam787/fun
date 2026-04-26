@@ -61,8 +61,8 @@
       align-items:center;
       z-index:999;
       font-size:60px;
-      font-weight:bold;
       color:#22c55e;
+      font-weight:bold;
     }
 
     /* RESULT POPUP */
@@ -73,7 +73,6 @@
       background:rgba(0,0,0,.8);
       justify-content:center;
       align-items:center;
-      z-index:1000;
     }
 
     .box{
@@ -87,20 +86,67 @@
       justify-content:flex-end;
       align-items:center;
       padding:20px;
-      box-shadow:0 0 20px rgba(0,0,0,0.5);
     }
 
     .box h2{
-      margin-bottom:15px;
       background:rgba(0,0,0,0.5);
       padding:8px 15px;
       border-radius:8px;
     }
 
-    .box button{
-      margin-top:8px;
-      width:120px;
+    /* CHAT */
+    .chat-box{
+      width:90%;
+      max-width:360px;
+      margin:20px auto;
+      background:rgba(0,0,0,0.6);
+      padding:10px;
+      border-radius:12px;
     }
+
+    #messages{
+      height:180px;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .bubble{
+      max-width:70%;
+      padding:8px 12px;
+      border-radius:12px;
+      font-size:13px;
+    }
+
+    .me{
+      align-self:flex-end;
+      background:#22c55e;
+      color:black;
+    }
+
+    .other{
+      align-self:flex-start;
+      background:#e5e7eb;
+      color:black;
+    }
+
+    .chat-input{
+      display:flex;
+      gap:5px;
+      margin-top:8px;
+    }
+
+    .chat-input input{
+      flex:1;
+      padding:8px;
+    }
+
+    .chat-input button{
+      background:#22c55e;
+      color:white;
+    }
+
   </style>
 </head>
 
@@ -119,12 +165,20 @@
 
 <div id="countPopup"></div>
 
-<!-- RESULT POPUP -->
 <div id="popup">
   <div class="box" id="resultBox">
     <h2 id="msg"></h2>
     <button onclick="reset()">Rematch</button>
     <button onclick="location.reload()">Restart</button>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="chat-box">
+  <div id="messages"></div>
+  <div class="chat-input">
+    <input id="msgInput" placeholder="Type message...">
+    <button onclick="sendMsg()">Send</button>
   </div>
 </div>
 
@@ -138,7 +192,7 @@
 
 <script>
 const firebaseConfig={
-  apiKey:"AIzaSyDTK0-Q2ev1MWrouI0j9HohKmg-O6g9HWs",
+  apiKey:"AIzaSy...",
   databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
@@ -146,19 +200,9 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
 let user=localStorage.getItem("user")||"Player";
-let room=null;
-let me=null;
-let ended=false;
-let gameStarted=false;
+let room=null, me=null, gameStarted=false, ended=false;
 
-function play(id){
-  let s=document.getElementById(id);
-  if(s){
-    s.currentTime=0;
-    s.play().catch(()=>{});
-  }
-}
-
+/* CREATE */
 function create(){
   room=Math.random().toString(36).substr(2,5);
   me="X";
@@ -172,60 +216,52 @@ function create(){
 
   document.getElementById("info").innerText="Room: "+room;
   start();
+  loadChat();
 }
 
+/* JOIN */
 function join(){
   room=document.getElementById("room").value.trim();
-  if(!room) return;
-
   me="O";
 
   let ref=db.ref("rooms/"+room);
 
-  ref.once("value").then(s=>{
-    if(!s.exists()) return alert("Room not found");
+  ref.update({"players/O":user,start:true});
 
-    ref.update({
-      "players/O": user,
-      start:true
-    });
-
-    startCountdown();
-  });
-
-  document.getElementById("info").innerText="Joined Room";
+  startCountdown();
   start();
+  loadChat();
 }
 
+/* COUNTDOWN */
 function startCountdown(){
-  let popup=document.getElementById("countPopup");
-  popup.style.display="flex";
+  let p=document.getElementById("countPopup");
+  p.style.display="flex";
 
-  let count=3;
+  let c=3;
+  let i=setInterval(()=>{
+    p.innerText=c;
+    document.getElementById("countSound").play();
+    c--;
 
-  let interval=setInterval(()=>{
-    popup.innerText=count;
-    play("countSound");
-    count--;
-
-    if(count===-1){
-      clearInterval(interval);
-      popup.innerText="GO!";
+    if(c==-1){
+      clearInterval(i);
+      p.innerText="GO!";
       setTimeout(()=>{
-        popup.style.display="none";
+        p.style.display="none";
         gameStarted=true;
       },500);
     }
   },1000);
 }
 
+/* GAME */
 function start(){
   db.ref("rooms/"+room).on("value",snap=>{
     let d=snap.val();
     if(!d) return;
 
     draw(d.board);
-
     document.getElementById("turn").innerText="Turn: "+d.turn;
 
     if(me==="X" && d.start && !gameStarted){
@@ -234,12 +270,10 @@ function start(){
 
     if(check(d.board) && !ended){
       ended=true;
-      play("winSound");
-
       let winner=d.turn==="X"?"O":"X";
 
-      if(winner===me) show("👑 You Win!", "win.jpg");
-      else show("🤡 You Lose!", "lose.jpg");
+      if(winner===me) show("👑 You Win!","win.jpg");
+      else show("🤡 You Lose!","lose.jpg");
     }
   });
 }
@@ -247,7 +281,6 @@ function start(){
 function draw(b){
   let div=document.getElementById("board");
   div.innerHTML="";
-
   b.forEach((v,i)=>{
     let c=document.createElement("div");
     c.className="cell";
@@ -260,36 +293,32 @@ function draw(b){
 function move(i){
   if(!gameStarted || ended) return;
 
-  play("tapSound");
-
   let ref=db.ref("rooms/"+room);
-
   ref.once("value").then(s=>{
     let d=s.val();
-
     if(d.board[i]!=="" || d.turn!==me) return;
 
     let b=[...d.board];
     b[i]=me;
 
-    ref.update({
-      board:b,
-      turn:me==="X"?"O":"X"
-    });
+    ref.update({board:b,turn:me==="X"?"O":"X"});
   });
 }
 
+/* CHECK */
 function check(b){
   let p=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
   return p.some(x=>x.every(i=>b[i]&&b[i]===b[x[0]]));
 }
 
-function show(text,bg){
-  document.getElementById("msg").innerText=text;
+/* RESULT */
+function show(t,bg){
+  document.getElementById("msg").innerText=t;
   document.getElementById("resultBox").style.backgroundImage=`url('${bg}')`;
   document.getElementById("popup").style.display="flex";
 }
 
+/* RESET */
 function reset(){
   ended=false;
   gameStarted=false;
@@ -300,8 +329,44 @@ function reset(){
     start:true
   });
 
+  clearChat();
   document.getElementById("popup").style.display="none";
   startCountdown();
+}
+
+/* CHAT */
+function sendMsg(){
+  let i=document.getElementById("msgInput");
+  if(!i.value.trim()) return;
+
+  db.ref("chats/"+room).push({
+    user:user,
+    msg:i.value
+  });
+
+  i.value="";
+}
+
+function loadChat(){
+  let box=document.getElementById("messages");
+  box.innerHTML="";
+
+  db.ref("chats/"+room).off();
+
+  db.ref("chats/"+room).on("child_added",snap=>{
+    let d=snap.val();
+
+    let div=document.createElement("div");
+    div.className="bubble "+(d.user===user?"me":"other");
+    div.innerText=d.msg;
+
+    box.appendChild(div);
+    box.scrollTop=box.scrollHeight;
+  });
+}
+
+function clearChat(){
+  db.ref("chats/"+room).remove();
 }
 </script>
 
