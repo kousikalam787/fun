@@ -51,12 +51,21 @@
       cursor:pointer;
     }
 
-    #countdown{
-      font-size:22px;
+    /* 🔥 COUNTDOWN POPUP */
+    #countPopup{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.85);
+      justify-content:center;
+      align-items:center;
+      z-index:999;
+      font-size:60px;
+      font-weight:bold;
       color:#22c55e;
-      margin-top:10px;
     }
 
+    /* RESULT POPUP */
     #popup{
       display:none;
       position:fixed;
@@ -85,10 +94,13 @@
 
 <p id="info"></p>
 <p id="turn"></p>
-<p id="countdown"></p>
 
 <div class="board" id="board"></div>
 
+<!-- 🔥 COUNTDOWN -->
+<div id="countPopup"></div>
+
+<!-- RESULT -->
 <div id="popup">
   <div class="box">
     <h2 id="msg"></h2>
@@ -119,9 +131,7 @@ let user=localStorage.getItem("user")||"Player";
 let room=null;
 let me=null;
 let ended=false;
-
 let gameStarted=false;
-let countdownPlayed=false;
 
 /* SOUND */
 function play(id){
@@ -136,18 +146,15 @@ function play(id){
 function create(){
   room=Math.random().toString(36).substr(2,5);
   me="X";
-  ended=false;
 
   db.ref("rooms/"+room).set({
     board:["","","","","","","","",""],
     turn:"X",
     players:{X:user,O:""},
-    startTime:null
+    start:false
   });
 
-  document.getElementById("info").innerText=
-    "Room: "+room+" | You: X";
-
+  document.getElementById("info").innerText="Room: "+room;
   start();
 }
 
@@ -157,27 +164,51 @@ function join(){
   if(!room) return;
 
   me="O";
-  ended=false;
 
   let ref=db.ref("rooms/"+room);
 
   ref.once("value").then(s=>{
-    let d=s.val();
-    if(!d) return alert("Room not found");
+    if(!s.exists()) return alert("Room not found");
 
     ref.update({
       "players/O": user,
-      startTime: d.startTime || Date.now()   // 🔥 FIX: only once
+      start:true
     });
+
+    startCountdown(); // 🔥 LOCAL COUNTDOWN
   });
 
-  document.getElementById("info").innerText=
-    "Joined Room | You: O";
-
+  document.getElementById("info").innerText="Joined Room";
   start();
 }
 
-/* START */
+/* 🔥 COUNTDOWN POPUP */
+function startCountdown(){
+
+  let popup=document.getElementById("countPopup");
+  popup.style.display="flex";
+
+  let count=3;
+
+  let interval=setInterval(()=>{
+    popup.innerText=count;
+    play("countSound");
+
+    count--;
+
+    if(count===-1){
+      clearInterval(interval);
+      popup.innerText="GO!";
+      setTimeout(()=>{
+        popup.style.display="none";
+        gameStarted=true;
+      },500);
+    }
+
+  },1000);
+}
+
+/* START LISTENER */
 function start(){
 
   db.ref("rooms/"+room).on("value",snap=>{
@@ -187,33 +218,11 @@ function start(){
 
     draw(d.board);
 
-    document.getElementById("turn").innerText=
-      `Turn: ${d.turn}`;
+    document.getElementById("turn").innerText="Turn: "+d.turn;
 
-    if(d.startTime){
-
-      let now=Date.now();
-      let remaining = 3 - Math.floor((now - d.startTime)/1000);
-
-      if(remaining > 0){
-        document.getElementById("countdown").innerText=
-          "Starting in "+remaining+"...";
-
-        if(!countdownPlayed){
-          play("countSound");
-          countdownPlayed=true;
-        }
-
-        gameStarted=false;
-        return;
-      }else{
-        document.getElementById("countdown").innerText="";
-        gameStarted=true;
-      }
-
-    }else{
-      document.getElementById("countdown").innerText="Waiting...";
-      return;
+    /* 🔥 HOST SIDE START */
+    if(me==="X" && d.start && !gameStarted){
+      startCountdown();
     }
 
     if(check(d.board) && !ended){
@@ -222,7 +231,7 @@ function start(){
 
       let winner=d.turn==="X"?"O":"X";
 
-      if(winner===me) show("👑🥳 You Win!");
+      if(winner===me) show("👑 You Win!");
       else show("🤡 You Lose!");
     }
 
@@ -273,7 +282,7 @@ function check(b){
   return p.some(x=>x.every(i=>b[i]&&b[i]===b[x[0]]));
 }
 
-/* POPUP */
+/* RESULT */
 function show(t){
   document.getElementById("msg").innerText=t;
   document.getElementById("popup").style.display="flex";
@@ -283,15 +292,15 @@ function show(t){
 function reset(){
   ended=false;
   gameStarted=false;
-  countdownPlayed=false;
 
   db.ref("rooms/"+room).update({
     board:["","","","","","","","",""],
     turn:"X",
-    startTime:Date.now()
+    start:true
   });
 
   document.getElementById("popup").style.display="none";
+  startCountdown();
 }
 
 </script>
