@@ -36,7 +36,12 @@
       cursor:pointer;
     }
 
-    /* ✅ COUNTDOWN */
+    #turn{
+      font-size:18px;
+      margin-top:10px;
+      font-weight:bold;
+    }
+
     #countPopup{
       display:none;
       position:fixed;
@@ -49,7 +54,6 @@
       z-index:999;
     }
 
-    /* ✅ RESULT POPUP */
     #popup{
       display:none;
       position:fixed;
@@ -62,13 +66,10 @@
     .box{
       width:280px;
       height:220px;
-
-      /* 🔥 MAIN FIX */
       background-size:contain;
       background-repeat:no-repeat;
       background-position:center;
       background-color:#000;
-
       display:flex;
       flex-direction:column;
       justify-content:flex-end;
@@ -110,7 +111,6 @@
 
     .me{align-self:flex-end;background:#22c55e;color:black;}
     .other{align-self:flex-start;background:#eee;color:black;}
-
   </style>
 </head>
 
@@ -150,7 +150,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 <script>
-
 const firebaseConfig={
   apiKey:"AIzaSy...",
   databaseURL:"https://kousik-game-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -162,6 +161,7 @@ const db=firebase.database();
 let user=localStorage.getItem("user")||"Player";
 let room, me;
 let ended=false;
+let lastTurn=null;
 
 /* CREATE */
 function create(){
@@ -202,7 +202,21 @@ function start(){
     if(!d) return;
 
     draw(d.board);
-    document.getElementById("turn").innerText="Turn: "+d.turn;
+
+    // 🔥 TURN DISPLAY FIX
+    if(d.turn === me){
+      document.getElementById("turn").innerText="👉 Your Turn";
+    }else{
+      document.getElementById("turn").innerText="⏳ Opponent Turn";
+    }
+
+    // 🔥 VIBRATION (only when your turn starts)
+    if(d.turn === me && lastTurn !== d.turn){
+      if(navigator.vibrate){
+        navigator.vibrate(200);
+      }
+    }
+    lastTurn = d.turn;
 
     if(d.started && !window.countStarted){
       window.countStarted=true;
@@ -235,7 +249,6 @@ function countdown(){
   p.style.display="flex";
 
   let c=3;
-
   let i=setInterval(()=>{
     p.innerText=c;
     document.getElementById("countSound").play();
@@ -246,7 +259,6 @@ function countdown(){
       p.innerText="GO!";
       setTimeout(()=>p.style.display="none",500);
     }
-
   },1000);
 }
 
@@ -344,7 +356,6 @@ function loadChat(){
 function clearChat(){
   db.ref("chats/"+room).remove();
 }
-
 </script>
 
 </body>
