@@ -121,7 +121,7 @@ let me=null;
 let ended=false;
 
 let gameStarted=false;
-let lastCount=null;
+let countdownPlayed=false;
 
 /* SOUND */
 function play(id){
@@ -146,7 +146,7 @@ function create(){
   });
 
   document.getElementById("info").innerText=
-    "Room: "+room+" | You: X ("+user+")";
+    "Room: "+room+" | You: X";
 
   start();
 }
@@ -159,12 +159,20 @@ function join(){
   me="O";
   ended=false;
 
-  db.ref("rooms/"+room+"/players/O").set(user);
+  let ref=db.ref("rooms/"+room);
 
-  db.ref("rooms/"+room+"/startTime").set(Date.now());
+  ref.once("value").then(s=>{
+    let d=s.val();
+    if(!d) return alert("Room not found");
+
+    ref.update({
+      "players/O": user,
+      startTime: d.startTime || Date.now()   // 🔥 FIX: only once
+    });
+  });
 
   document.getElementById("info").innerText=
-    "Joined Room | You: O ("+user+")";
+    "Joined Room | You: O";
 
   start();
 }
@@ -175,42 +183,36 @@ function start(){
   db.ref("rooms/"+room).on("value",snap=>{
 
     let d=snap.val();
-    if(!d || !d.board) return;
+    if(!d) return;
 
     draw(d.board);
 
-    let pX=d.players?.X||"Waiting";
-    let pO=d.players?.O||"Waiting";
-
     document.getElementById("turn").innerText=
-      `X: ${pX} | O: ${pO} | Turn: ${d.turn}`;
+      `Turn: ${d.turn}`;
 
     if(d.startTime){
 
       let now=Date.now();
-      let diff=Math.floor((now-d.startTime)/1000);
-      let remaining=3-diff;
+      let remaining = 3 - Math.floor((now - d.startTime)/1000);
 
-      if(remaining>0){
+      if(remaining > 0){
         document.getElementById("countdown").innerText=
           "Starting in "+remaining+"...";
 
-        if(lastCount!==remaining){
+        if(!countdownPlayed){
           play("countSound");
-          lastCount=remaining;
+          countdownPlayed=true;
         }
 
         gameStarted=false;
         return;
       }else{
-        document.getElementById("countdown").innerText="GO!";
+        document.getElementById("countdown").innerText="";
         gameStarted=true;
       }
 
     }else{
-      document.getElementById("countdown").innerText=
-        "Waiting for player...";
-      gameStarted=false;
+      document.getElementById("countdown").innerText="Waiting...";
       return;
     }
 
@@ -219,16 +221,11 @@ function start(){
       play("winSound");
 
       let winner=d.turn==="X"?"O":"X";
-      let name=d.players[winner];
 
-      if(name===user) show("👑 You Win!");
+      if(winner===me) show("👑🥳 You Win!");
       else show("🤡 You Lose!");
     }
 
-    if(d.board.every(x=>x!=="") && !ended){
-      ended=true;
-      show("🤝 Draw!");
-    }
   });
 }
 
@@ -249,8 +246,7 @@ function draw(b){
 /* MOVE */
 function move(i){
 
-  if(!gameStarted) return;
-  if(ended) return;
+  if(!gameStarted || ended) return;
 
   play("tapSound");
 
@@ -258,7 +254,6 @@ function move(i){
 
   ref.once("value").then(s=>{
     let d=s.val();
-    if(!d) return;
 
     if(d.board[i]!=="" || d.turn!==me) return;
 
@@ -274,11 +269,7 @@ function move(i){
 
 /* CHECK */
 function check(b){
-  let p=[
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
+  let p=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
   return p.some(x=>x.every(i=>b[i]&&b[i]===b[x[0]]));
 }
 
@@ -292,7 +283,7 @@ function show(t){
 function reset(){
   ended=false;
   gameStarted=false;
-  lastCount=null;
+  countdownPlayed=false;
 
   db.ref("rooms/"+room).update({
     board:["","","","","","","","",""],
