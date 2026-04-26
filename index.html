@@ -4,7 +4,7 @@
   <title>Fun Zone - Play Games Online</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ AdSense -->
+  <!-- AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5985676857185797"
     crossorigin="anonymous"></script>
 
@@ -16,7 +16,7 @@
       overflow-x:hidden;
     }
 
-    /* 🎥 VIDEO BG */
+    /* VIDEO BG */
     video{
       position:fixed;
       top:0;
@@ -31,16 +31,32 @@
     .nav{
       display:flex;
       justify-content:space-between;
-      padding:15px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding:12px 15px;
       background:rgba(0,0,0,0.6);
       position:sticky;
       top:0;
+      z-index:10;
     }
 
-    .nav a{
+    .logo{
+      font-weight:bold;
+      font-size:18px;
+    }
+
+    .links{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .links a{
       color:white;
-      margin:0 10px;
       text-decoration:none;
+      padding:6px 10px;
+      border-radius:6px;
+      background:rgba(255,255,255,0.1);
     }
 
     /* SEARCH */
@@ -51,8 +67,8 @@
 
     .search input{
       padding:10px;
-      width:80%;
-      max-width:400px;
+      width:85%;
+      max-width:420px;
       border-radius:8px;
       border:none;
     }
@@ -60,32 +76,40 @@
     /* GAMES GRID */
     .games{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
       gap:15px;
       padding:20px;
     }
 
     .card{
+      display:block;
+      text-decoration:none;
+      color:white;
       background:rgba(0,0,0,0.6);
       border-radius:15px;
       overflow:hidden;
-      text-align:center;
-      cursor:pointer;
-      transition:0.3s;
+      transition:0.25s;
     }
 
     .card:hover{
       transform:scale(1.05);
     }
 
+    .card:active{
+      transform:scale(0.97);
+    }
+
     .card img{
       width:100%;
-      height:120px;
+      height:130px;
       object-fit:cover;
     }
 
     .card p{
+      margin:0;
       padding:10px;
+      text-align:center;
+      font-weight:bold;
     }
 
     /* FOOTER */
@@ -100,15 +124,15 @@
 
 <body>
 
-<!-- 🎥 Background Video -->
+<!-- VIDEO BACKGROUND -->
 <video autoplay muted loop>
   <source src="bg.mp4" type="video/mp4">
 </video>
 
 <!-- NAV -->
 <div class="nav">
-  <div>🎮 Fun Zone</div>
-  <div>
+  <div class="logo">🎮 Fun Zone</div>
+  <div class="links">
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
@@ -122,22 +146,23 @@
 </div>
 
 <!-- GAMES -->
-<div class="games" id="games">
+<div class="games">
 
-  <div class="card" data-name="tic tac toe" onclick="location.href='tic.html'">
+  <!-- ✅ FIXED LINK -->
+  <a class="card" data-name="tic tac toe" href="tictactoe.html">
     <img src="tic.jpg">
     <p>Tic Tac Toe</p>
-  </div>
+  </a>
 
-  <div class="card" data-name="snake" onclick="location.href='snake.html'">
+  <a class="card" data-name="snake" href="snake.html">
     <img src="snake.jpg">
     <p>Snake Pro</p>
-  </div>
+  </a>
 
-  <div class="card" data-name="ludo" onclick="location.href='ludo.html'">
+  <a class="card" data-name="ludo" href="ludo.html">
     <img src="ludo.jpg">
     <p>Ludo</p>
-  </div>
+  </a>
 
 </div>
 
