@@ -14,14 +14,12 @@
       font-family:Arial;
       color:white;
       overflow-x:hidden;
-
-      /* 🔥 FOOTER FIX */
       min-height:100vh;
       display:flex;
       flex-direction:column;
     }
 
-    /* VIDEO BG */
+    /* VIDEO */
     video{
       position:fixed;
       width:100%;
@@ -35,96 +33,93 @@
       display:flex;
       justify-content:space-between;
       flex-wrap:wrap;
-      padding:12px;
+      padding:10px;
       background:rgba(0,0,0,0.6);
     }
 
     .links{
       display:flex;
-      gap:10px;
+      gap:8px;
       flex-wrap:wrap;
     }
 
     .links a{
       color:white;
       text-decoration:none;
-      padding:6px 10px;
+      padding:5px 8px;
+      font-size:13px;
       background:rgba(255,255,255,0.1);
-      border-radius:6px;
+      border-radius:5px;
     }
 
     /* SEARCH */
     .search{
       text-align:center;
-      margin:15px;
+      margin:10px;
     }
 
     .search input{
-      padding:10px;
-      width:80%;
-      border-radius:8px;
+      padding:8px;
+      width:75%;
+      border-radius:6px;
       border:none;
     }
 
-    /* GAMES */
+    /* 🔥 SMALL GRID FIX */
     .games{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-      gap:15px;
-      padding:15px;
-
-      /* 🔥 important */
+      grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+      gap:10px;
+      padding:10px;
       flex:1;
+      max-width:900px;
+      margin:auto;
     }
 
     .card{
       background:rgba(0,0,0,0.6);
-      border-radius:12px;
+      border-radius:10px;
       overflow:hidden;
       text-decoration:none;
       color:white;
-      transition:0.3s;
+      transition:0.2s;
     }
 
     .card:hover{
       transform:scale(1.05);
     }
 
-    /* IMAGE FIX */
+    /* 🔥 SMALL IMAGE */
     .card img{
       width:100%;
-      height:110px;
+      height:80px;
       object-fit:cover;
-      display:block;
     }
 
     .card p{
       text-align:center;
-      padding:8px;
-      font-size:14px;
+      padding:6px;
+      font-size:13px;
       margin:0;
     }
 
     /* FOOTER */
     .footer{
       text-align:center;
-      padding:15px;
+      padding:12px;
       background:rgba(0,0,0,0.7);
-
-      /* 🔥 bottom lock */
       margin-top:auto;
+      font-size:13px;
     }
   </style>
 </head>
 
 <body>
 
-<!-- VIDEO -->
 <video autoplay muted loop>
   <source src="bg.mp4" type="video/mp4">
 </video>
 
-<!-- NAV -->
 <div class="nav">
   <div>🎮 Fun Zone</div>
   <div class="links">
@@ -135,12 +130,10 @@
   </div>
 </div>
 
-<!-- SEARCH -->
 <div class="search">
   <input type="text" placeholder="Search games..." onkeyup="searchGame(this.value)">
 </div>
 
-<!-- GAMES -->
 <div class="games">
 
   <a class="card" data-name="tic tac toe" href="tictactoe.html">
@@ -160,7 +153,6 @@
 
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
   © 2026 Fun Zone
 </div>
