@@ -8,9 +8,17 @@
     body{
       margin:0;
       font-family:Arial;
-      background:#0f172a;
-      color:white;
       text-align:center;
+      color:white;
+      background:url('bgl.jpg') center/cover no-repeat fixed;
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+      z-index:-1;
     }
 
     input,button{
@@ -22,21 +30,24 @@
 
     .board{
       display:grid;
-      grid-template-columns:repeat(3,90px);
+      grid-template-columns:repeat(3,100px);
       justify-content:center;
       gap:10px;
       margin-top:20px;
+      padding:15px;
+      background:url('board.jpg') center/cover;
+      border-radius:15px;
     }
 
     .cell{
       width:90px;
       height:90px;
-      background:#1e293b;
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:35px;
       border-radius:10px;
+      background:rgba(0,0,0,0.4);
       cursor:pointer;
     }
 
@@ -78,7 +89,6 @@
 
 <div class="board" id="board"></div>
 
-<!-- POPUP -->
 <div id="popup">
   <div class="box">
     <h2 id="msg"></h2>
@@ -151,7 +161,6 @@ function join(){
 
   db.ref("rooms/"+room+"/players/O").set(user);
 
-  /* ⏳ start timer trigger */
   db.ref("rooms/"+room+"/startTime").set(Date.now());
 
   document.getElementById("info").innerText=
@@ -176,7 +185,6 @@ function start(){
     document.getElementById("turn").innerText=
       `X: ${pX} | O: ${pO} | Turn: ${d.turn}`;
 
-    /* ⏳ COUNTDOWN */
     if(d.startTime){
 
       let now=Date.now();
@@ -206,7 +214,6 @@ function start(){
       return;
     }
 
-    /* WIN */
     if(check(d.board) && !ended){
       ended=true;
       play("winSound");
