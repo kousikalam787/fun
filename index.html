@@ -14,6 +14,11 @@
       font-family:Arial;
       color:white;
       overflow-x:hidden;
+
+      /* 🔥 FOOTER FIX */
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
     }
 
     /* VIDEO BG */
@@ -67,6 +72,9 @@
       grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
       gap:15px;
       padding:15px;
+
+      /* 🔥 important */
+      flex:1;
     }
 
     .card{
@@ -82,11 +90,11 @@
       transform:scale(1.05);
     }
 
-    /* 🔥 IMAGE FIX */
+    /* IMAGE FIX */
     .card img{
       width:100%;
-      height:110px;        /* size control */
-      object-fit:cover;    /* perfect fit */
+      height:110px;
+      object-fit:cover;
       display:block;
     }
 
@@ -102,6 +110,9 @@
       text-align:center;
       padding:15px;
       background:rgba(0,0,0,0.7);
+
+      /* 🔥 bottom lock */
+      margin-top:auto;
     }
   </style>
 </head>
@@ -130,9 +141,8 @@
 </div>
 
 <!-- GAMES -->
-<div class="games" id="games">
+<div class="games">
 
-  <!-- ✅ FIXED IMAGE NAME -->
   <a class="card" data-name="tic tac toe" href="tictactoe.html">
     <img src="tictactoe.jpg">
     <p>Tic Tac Toe</p>
@@ -150,6 +160,7 @@
 
 </div>
 
+<!-- FOOTER -->
 <div class="footer">
   © 2026 Fun Zone
 </div>
