@@ -33,7 +33,7 @@
       content:"";
       position:fixed;
       inset:0;
-      background:rgba(0,0,0,0.65);
+      background:rgba(0,0,0,0.7);
       z-index:-1;
     }
 
@@ -47,7 +47,7 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      background:rgba(0,0,0,0.5);
+      background:rgba(0,0,0,0.6);
       z-index:10;
     }
 
@@ -65,10 +65,6 @@
       font-size:14px;
     }
 
-    .home-btn:active{
-      transform:scale(0.95);
-    }
-
     /* CENTER */
     .container{
       height:100vh;
@@ -78,33 +74,36 @@
       padding-top:60px;
     }
 
-    /* GLASS CARD */
+    /* CARD */
     .card{
       width:90%;
-      max-width:500px;
-      background:rgba(30,41,59,0.75);
+      max-width:600px;
+      background:rgba(30,41,59,0.8);
       padding:30px 25px;
       border-radius:15px;
       box-shadow:0 0 25px rgba(0,0,0,0.6);
       backdrop-filter:blur(6px);
-      text-align:center;
+      text-align:left;
+      overflow-y:auto;
+      max-height:80vh;
     }
 
     .card h1{
+      text-align:center;
       font-size:26px;
-      margin-bottom:10px;
+      margin-bottom:15px;
+    }
+
+    .card h3{
+      margin-top:18px;
+      color:#22c55e;
     }
 
     .card p{
       font-size:14px;
-      opacity:0.9;
-      line-height:1.6;
-      margin-top:10px;
-    }
-
-    .highlight{
-      color:#22c55e;
-      font-weight:bold;
+      opacity:0.95;
+      line-height:1.7;
+      margin-top:8px;
     }
 
   </style>
@@ -112,40 +111,60 @@
 
 <body>
 
-<!-- 🎥 BACKGROUND VIDEO -->
 <video autoplay muted loop id="bgVideo">
   <source src="bg.mp4" type="video/mp4">
 </video>
 
-<!-- TOP BAR -->
 <div class="topbar">
   <div class="logo">ℹ️ About</div>
-  <a class="home-btn" href="home.html">🏠 Home</a>
+  <a class="home-btn" href="index.html">🏠 Home</a>
 </div>
 
-<!-- CONTENT -->
 <div class="container">
-
   <div class="card">
 
     <h1>🎮 About Fun Zone</h1>
 
     <p>
-      Welcome to <span class="highlight">Fun Zone</span>, a modern gaming platform
-      where you can enjoy multiple mini games like Snake, Ludo, and Tic Tac Toe.
+      <b>Fun Zone</b> is a free online gaming website where users can play simple and entertaining browser-based games without downloading anything.
+      Our goal is to provide a smooth, fast, and enjoyable gaming experience for everyone.
     </p>
 
+    <h3>🎯 Our Mission</h3>
     <p>
-      This website is designed for smooth gameplay, mobile support, and real-time fun.
-      We focus on simple UI, fast loading, and smooth experience.
+      We aim to create a platform where users can enjoy quick games anytime, anywhere. 
+      We focus on simplicity, performance, and clean design so that games run smoothly on both mobile and desktop devices.
     </p>
 
+    <h3>🎮 What We Offer</h3>
     <p>
-      🚀 Built with passion to deliver a clean gaming experience for everyone.
+      - Classic games like Tic Tac Toe  
+      - Fun arcade games like Snake  
+      - Multiplayer features using real-time technology  
+      - Lightweight design for fast loading  
+    </p>
+
+    <h3>⚙️ Technology</h3>
+    <p>
+      This website is built using modern web technologies such as HTML, CSS, JavaScript, and Firebase for real-time multiplayer features.
+    </p>
+
+    <h3>🔒 User Experience</h3>
+    <p>
+      We do not require users to create accounts. You can play games instantly without login. 
+      Our focus is on providing a safe and simple experience.
+    </p>
+
+    <h3>📢 Future Updates</h3>
+    <p>
+      We are continuously working on adding more games, improving UI, and enhancing performance to make Fun Zone better every day.
+    </p>
+
+    <p style="text-align:center;margin-top:15px;">
+      🚀 Made with passion for gamers
     </p>
 
   </div>
-
 </div>
 
 </body>
