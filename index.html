@@ -4,109 +4,89 @@
   <title>Fun Zone - Play Free Online Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SEO -->
-  <meta name="description" content="Play free online games like Tic Tac Toe, Snake and Ludo. Fun Zone offers smooth and fast browser gaming experience.">
-
   <!-- AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5985676857185797"
     crossorigin="anonymous"></script>
 
   <style>
-    body{
-      margin:0;
-      font-family:Arial;
-      color:white;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
+
+    body{color:white;overflow:hidden;}
 
     video{
       position:fixed;
       width:100%;
       height:100%;
       object-fit:cover;
+      z-index:-2;
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.5);
       z-index:-1;
+    }
+
+    /* PAGE WRAP (for swipe) */
+    #page{
+      transition:0.5s ease;
     }
 
     /* NAV */
     .nav{
       display:flex;
       justify-content:space-between;
-      flex-wrap:wrap;
       padding:12px;
-      background:rgba(0,0,0,0.7);
-      align-items:center;
-    }
-
-    .logo{
-      font-weight:bold;
-      font-size:16px;
-    }
-
-    .links{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+      background:rgba(0,0,0,0.6);
+      backdrop-filter:blur(10px);
     }
 
     .links a{
       color:white;
       text-decoration:none;
+      margin-left:6px;
       padding:6px 10px;
-      font-size:13px;
       background:rgba(255,255,255,0.1);
-      border-radius:6px;
-    }
-
-    /* HERO TEXT */
-    .hero{
-      text-align:center;
-      padding:15px;
-      font-size:14px;
-      max-width:700px;
-      margin:auto;
-      line-height:1.6;
-      opacity:0.95;
-    }
-
-    /* SEARCH */
-    .search{
-      text-align:center;
-      margin:10px;
-    }
-
-    .search input{
-      padding:10px;
-      width:80%;
-      max-width:400px;
       border-radius:8px;
-      border:none;
-      outline:none;
     }
 
-    /* GAMES GRID */
+    /* MUSIC BTN */
+    .music-btn{
+      position:fixed;
+      bottom:15px;
+      right:15px;
+      background:#22c55e;
+      padding:10px;
+      border-radius:50%;
+      z-index:10;
+      cursor:pointer;
+    }
+
+    /* GRID */
     .games{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
       gap:15px;
       padding:15px;
-      flex:1;
-      max-width:1000px;
+      max-width:900px;
       margin:auto;
     }
 
     .card{
-      background:rgba(0,0,0,0.6);
-      border-radius:12px;
+      background:rgba(255,255,255,0.1);
+      backdrop-filter:blur(10px);
+      border-radius:15px;
       overflow:hidden;
-      text-decoration:none;
-      color:white;
+      text-align:center;
       transition:0.3s;
     }
 
-    .card:hover{
-      transform:scale(1.05);
+    /* 🔥 PREVIEW ANIMATION */
+    .card:active{
+      transform:scale(0.95);
+      box-shadow:0 0 20px #22c55e;
     }
 
     .card img{
@@ -116,18 +96,17 @@
     }
 
     .card p{
-      margin:0;
       padding:8px;
-      font-size:13px;
-      text-align:center;
     }
 
-    /* FOOTER */
-    .footer{
-      text-align:center;
-      padding:12px;
-      background:rgba(0,0,0,0.8);
-      font-size:13px;
+    /* SWIPE TRANSITION */
+    .slide-out{
+      transform:translateX(-100%);
+      opacity:0;
+    }
+
+    .slide-in{
+      transform:translateX(100%);
     }
 
   </style>
@@ -139,8 +118,10 @@
   <source src="bg.mp4" type="video/mp4">
 </video>
 
+<div id="page">
+
 <div class="nav">
-  <div class="logo">🎮 Fun Zone</div>
+  <div>🎮 Fun Zone</div>
   <div class="links">
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
@@ -149,47 +130,71 @@
   </div>
 </div>
 
-<!-- 🔥 HERO CONTENT (AdSense important) -->
-<div class="hero">
-  Welcome to <b>Fun Zone</b> 🎮 – Play free online games directly in your browser.  
-  Enjoy smooth gameplay with popular games like <b>Tic Tac Toe</b>, <b>Snake</b>, and <b>Ludo</b>.  
-  No download, no login – just instant fun anytime, anywhere.
-</div>
-
-<div class="search">
-  <input type="text" placeholder="🔍 Search games..." onkeyup="searchGame(this.value)">
-</div>
-
 <div class="games">
 
-  <a class="card" data-name="tic tac toe" href="tictactoe.html">
+  <div class="card" onclick="openGame('tictactoe.html')">
     <img src="tictactoe.jpg">
     <p>Tic Tac Toe</p>
-  </a>
+  </div>
 
-  <a class="card" data-name="snake" href="snake.html">
+  <div class="card" onclick="openGame('snake.html')">
     <img src="snake.jpg">
     <p>Snake Pro</p>
-  </a>
+  </div>
 
-  <a class="card" data-name="ludo" href="ludo.html">
+  <div class="card" onclick="openGame('ludo.html')">
     <img src="ludo.jpg">
     <p>Ludo</p>
-  </a>
+  </div>
 
 </div>
 
-<div class="footer">
-  © 2026 Fun Zone | Free Online Games
 </div>
+
+<!-- 🔊 CLICK SOUND -->
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+
+<!-- 🎵 BACKGROUND MUSIC -->
+<audio id="bgMusic" loop>
+  <source src="https://assets.mixkit.co/music/preview/mixkit-game-level-music-689.mp3">
+</audio>
+
+<div class="music-btn" onclick="toggleMusic()">🎵</div>
 
 <script>
-function searchGame(val){
-  val = val.toLowerCase();
-  document.querySelectorAll(".card").forEach(card=>{
-    card.style.display = card.dataset.name.includes(val) ? "block" : "none";
-  });
+
+// GAME OPEN WITH SWIPE
+function openGame(url){
+  document.getElementById("clickSound").play();
+
+  const page = document.getElementById("page");
+  page.classList.add("slide-out");
+
+  setTimeout(()=>{
+    window.location.href = url;
+  },500);
 }
+
+// MUSIC SYSTEM
+let music = document.getElementById("bgMusic");
+
+function toggleMusic(){
+  if(music.paused){
+    music.play();
+    localStorage.setItem("music","on");
+  } else {
+    music.pause();
+    localStorage.setItem("music","off");
+  }
+}
+
+// LOAD MUSIC STATE
+window.onload = ()=>{
+  if(localStorage.getItem("music")==="on"){
+    music.play();
+  }
+};
+
 </script>
 
 </body>
