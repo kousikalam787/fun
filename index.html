@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fun Zone - Play Games Online</title>
+  <title>Fun Zone - Play Free Online Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <meta name="description" content="Play free online games like Tic Tac Toe, Snake and Ludo. Fun Zone offers smooth and fast browser gaming experience.">
 
   <!-- AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5985676857185797"
@@ -31,8 +34,14 @@
       display:flex;
       justify-content:space-between;
       flex-wrap:wrap;
-      padding:10px;
-      background:rgba(0,0,0,0.6);
+      padding:12px;
+      background:rgba(0,0,0,0.7);
+      align-items:center;
+    }
+
+    .logo{
+      font-weight:bold;
+      font-size:16px;
     }
 
     .links{
@@ -44,10 +53,21 @@
     .links a{
       color:white;
       text-decoration:none;
-      padding:5px 8px;
+      padding:6px 10px;
       font-size:13px;
       background:rgba(255,255,255,0.1);
-      border-radius:5px;
+      border-radius:6px;
+    }
+
+    /* HERO TEXT */
+    .hero{
+      text-align:center;
+      padding:15px;
+      font-size:14px;
+      max-width:700px;
+      margin:auto;
+      line-height:1.6;
+      opacity:0.95;
     }
 
     /* SEARCH */
@@ -57,64 +77,59 @@
     }
 
     .search input{
-      padding:8px;
-      width:75%;
-      border-radius:6px;
+      padding:10px;
+      width:80%;
+      max-width:400px;
+      border-radius:8px;
       border:none;
+      outline:none;
     }
 
-    /* 🔥 GRID FIX */
+    /* GAMES GRID */
     .games{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-      gap:12px;
-      padding:12px;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      gap:15px;
+      padding:15px;
       flex:1;
-      max-width:900px;
+      max-width:1000px;
       margin:auto;
-
-      align-items:start; /* 🔥 MAIN FIX */
     }
 
-    /* 🔥 CARD FIX */
     .card{
-      background:rgba(0,0,0,0.5);
-      border-radius:10px;
+      background:rgba(0,0,0,0.6);
+      border-radius:12px;
       overflow:hidden;
       text-decoration:none;
       color:white;
-
-      display:inline-block;   /* 🔥 IMPORTANT */
+      transition:0.3s;
     }
 
     .card:hover{
       transform:scale(1.05);
     }
 
-    /* IMAGE */
     .card img{
       width:100%;
-      height:90px;
+      height:110px;
       object-fit:cover;
-      display:block;
     }
 
-    /* TEXT */
     .card p{
       margin:0;
-      padding:6px;
-      font-size:12px;
+      padding:8px;
+      font-size:13px;
       text-align:center;
     }
 
     /* FOOTER */
     .footer{
       text-align:center;
-      padding:10px;
-      background:rgba(0,0,0,0.7);
-      margin-top:auto;
+      padding:12px;
+      background:rgba(0,0,0,0.8);
       font-size:13px;
     }
+
   </style>
 </head>
 
@@ -125,7 +140,7 @@
 </video>
 
 <div class="nav">
-  <div>🎮 Fun Zone</div>
+  <div class="logo">🎮 Fun Zone</div>
   <div class="links">
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
@@ -134,8 +149,15 @@
   </div>
 </div>
 
+<!-- 🔥 HERO CONTENT (AdSense important) -->
+<div class="hero">
+  Welcome to <b>Fun Zone</b> 🎮 – Play free online games directly in your browser.  
+  Enjoy smooth gameplay with popular games like <b>Tic Tac Toe</b>, <b>Snake</b>, and <b>Ludo</b>.  
+  No download, no login – just instant fun anytime, anywhere.
+</div>
+
 <div class="search">
-  <input type="text" placeholder="Search games..." onkeyup="searchGame(this.value)">
+  <input type="text" placeholder="🔍 Search games..." onkeyup="searchGame(this.value)">
 </div>
 
 <div class="games">
@@ -158,14 +180,14 @@
 </div>
 
 <div class="footer">
-  © 2026 Fun Zone
+  © 2026 Fun Zone | Free Online Games
 </div>
 
 <script>
 function searchGame(val){
   val = val.toLowerCase();
   document.querySelectorAll(".card").forEach(card=>{
-    card.style.display = card.dataset.name.includes(val) ? "inline-block" : "none";
+    card.style.display = card.dataset.name.includes(val) ? "block" : "none";
   });
 }
 </script>
