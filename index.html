@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fun Zone - Play Free Online Games</title>
+  <title>Fun Zone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5985676857185797"
-    crossorigin="anonymous"></script>
-
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial;
+    }
 
-    body{color:white;overflow:hidden;}
+    body{
+      color:white;
+      overflow-x:hidden;
+    }
 
     video{
       position:fixed;
@@ -29,48 +33,44 @@
       z-index:-1;
     }
 
-    /* PAGE WRAP (for swipe) */
-    #page{
-      transition:0.5s ease;
-    }
-
-    /* NAV */
+    /* 🔥 NAV FIX */
     .nav{
       display:flex;
       justify-content:space-between;
-      padding:12px;
+      align-items:center;
+      padding:10px;
       background:rgba(0,0,0,0.6);
       backdrop-filter:blur(10px);
+    }
+
+    .logo{
+      font-size:16px;
+      font-weight:bold;
+    }
+
+    .links{
+      display:flex;
+      gap:6px;
+      flex-wrap:nowrap; /* 🔥 FIX */
     }
 
     .links a{
       color:white;
       text-decoration:none;
-      margin-left:6px;
-      padding:6px 10px;
+      padding:6px 8px;
+      font-size:12px;
       background:rgba(255,255,255,0.1);
-      border-radius:8px;
-    }
-
-    /* MUSIC BTN */
-    .music-btn{
-      position:fixed;
-      bottom:15px;
-      right:15px;
-      background:#22c55e;
-      padding:10px;
-      border-radius:50%;
-      z-index:10;
-      cursor:pointer;
+      border-radius:6px;
+      white-space:nowrap; /* 🔥 FIX */
     }
 
     /* GRID */
     .games{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-      gap:15px;
-      padding:15px;
-      max-width:900px;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      padding:12px;
+      max-width:500px;
       margin:auto;
     }
 
@@ -83,10 +83,8 @@
       transition:0.3s;
     }
 
-    /* 🔥 PREVIEW ANIMATION */
     .card:active{
       transform:scale(0.95);
-      box-shadow:0 0 20px #22c55e;
     }
 
     .card img{
@@ -97,16 +95,23 @@
 
     .card p{
       padding:8px;
+      font-size:13px;
     }
 
-    /* SWIPE TRANSITION */
-    .slide-out{
-      transform:translateX(-100%);
-      opacity:0;
-    }
-
-    .slide-in{
-      transform:translateX(100%);
+    /* 🎵 BUTTON FIX */
+    .music-btn{
+      position:fixed;
+      bottom:20px;
+      right:20px;
+      background:#22c55e;
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      z-index:10;
     }
 
   </style>
@@ -118,10 +123,9 @@
   <source src="bg.mp4" type="video/mp4">
 </video>
 
-<div id="page">
-
+<!-- NAV -->
 <div class="nav">
-  <div>🎮 Fun Zone</div>
+  <div class="logo">🎮 Fun Zone</div>
   <div class="links">
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
@@ -130,6 +134,7 @@
   </div>
 </div>
 
+<!-- GAMES -->
 <div class="games">
 
   <div class="card" onclick="openGame('tictactoe.html')">
@@ -149,12 +154,9 @@
 
 </div>
 
-</div>
-
-<!-- 🔊 CLICK SOUND -->
+<!-- SOUND -->
 <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 
-<!-- 🎵 BACKGROUND MUSIC -->
 <audio id="bgMusic" loop>
   <source src="https://assets.mixkit.co/music/preview/mixkit-game-level-music-689.mp3">
 </audio>
@@ -163,35 +165,33 @@
 
 <script>
 
-// GAME OPEN WITH SWIPE
+// GAME OPEN
 function openGame(url){
   document.getElementById("clickSound").play();
-
-  const page = document.getElementById("page");
-  page.classList.add("slide-out");
-
-  setTimeout(()=>{
-    window.location.href = url;
-  },500);
+  setTimeout(()=>{ window.location.href = url; },300);
 }
 
-// MUSIC SYSTEM
+// 🔥 MUSIC FIX (mobile autoplay issue solved)
 let music = document.getElementById("bgMusic");
 
 function toggleMusic(){
   if(music.paused){
-    music.play();
-    localStorage.setItem("music","on");
+    music.play().then(()=>{
+      localStorage.setItem("music","on");
+    }).catch(()=>{});
   } else {
     music.pause();
     localStorage.setItem("music","off");
   }
 }
 
-// LOAD MUSIC STATE
+// LOAD STATE
 window.onload = ()=>{
   if(localStorage.getItem("music")==="on"){
-    music.play();
+    // autoplay block avoid → play after first touch
+    document.body.addEventListener("click", ()=>{
+      music.play();
+    }, { once:true });
   }
 };
 
